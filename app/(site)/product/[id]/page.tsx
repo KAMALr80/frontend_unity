@@ -1,0 +1,526 @@
+"use client";
+
+import { use, useState, Suspense } from "react";
+import { ProductImage } from "@/components/shared/ProductImage";
+import Link from "next/link";
+import { Heart, GitCompare, ChevronLeft, ChevronRight } from "lucide-react";
+import { useProduct } from "@/hooks/useProducts";
+import { type ImageVariants } from "@/lib/imageVariants";
+import { type Product } from "@/hooks/useProducts";
+import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
+import { Breadcrumb } from "@/components/shared/Breadcrumb";
+import { PriceGate } from "@/components/shared/PriceGate";
+import { StockDot } from "@/components/shared/StockDot";
+import { CartBar } from "@/components/shared/CartBar";
+import { useToggleWishlist, useWishlistIds } from "@/hooks/useWishlist";
+
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+// ─── Image Gallery ────────────────────────────────────────────────────────────
+
+function ImagePlaceholder() {
+  return (
+    <div
+      className="w-full h-full flex items-center justify-center"
+      style={{
+        background: "repeating-linear-gradient(135deg, var(--muted) 0 14px, var(--border) 14px 28px)",
+      }}
+    >
+      <span className="text-[10px] font-medium tracking-[0.08em] uppercase text-muted-foreground">
+        No image
+      </span>
+    </div>
+  );
+}
+
+function ImageGallery({ images, name }: { images: { url: string; is_primary: boolean; variants?: ImageVariants | null }[]; name: string }) {
+  const sorted = [...images].sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0));
+  const [active, setActive] = useState(0);
+
+  const prev = () => setActive((i) => (i - 1 + sorted.length) % sorted.length);
+  const next = () => setActive((i) => (i + 1) % sorted.length);
+
+  if (sorted.length === 0) {
+    return (
+      <div className="aspect-[4/3] relative overflow-hidden rounded-lg border border-border bg-muted">
+        <ImagePlaceholder />
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      {/* Main image */}
+      <div className="group aspect-[4/3] relative overflow-hidden rounded-lg border border-border bg-muted shadow-sm">
+        <ProductImage
+          src={sorted[active].url}
+          variants={sorted[active].variants}
+          alt={name}
+          sizes="(max-width: 767px) 100vw, 50vw"
+          className="object-contain"
+          priority
+        />
+        {sorted.length > 1 && (
+          <>
+            <button
+              onClick={prev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 lg:w-7 lg:h-7 rounded-md border border-border bg-card/90 text-foreground shadow-sm flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            <button
+              onClick={next}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 lg:w-7 lg:h-7 rounded-md border border-border bg-card/90 text-foreground shadow-sm flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Thumbnails */}
+      {sorted.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto">
+          {sorted.map((img, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              className={`shrink-0 w-16 h-16 relative overflow-hidden rounded-md border-2 bg-card transition-colors ${
+                i === active ? "border-primary" : "border-border hover:border-primary/50"
+              }`}
+            >
+              <ProductImage src={img.url} variants={img.variants} alt={`${name} ${i + 1}`} sizes="64px" className="object-contain" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Price Block ─────────────────────────────────────────────────────────────
+
+function PriceBlock({ product }: { product: Product }) {
+  return (
+    <PriceGate pricesVisible={product.prices_visible}>
+      {product.on_sale && product.sale_price !== null ? (
+        <div className="flex items-baseline gap-2">
+          <span className="text-[24px] font-semibold text-destructive">
+            ${product.sale_price.toFixed(2)}
+          </span>
+          {product.regular_price !== null && (
+            <span className="text-[16px] text-muted-foreground line-through">
+              ${product.regular_price.toFixed(2)}
+            </span>
+          )}
+          {product.regular_price !== null && product.sale_price !== null && (
+            <span className="rounded-sm bg-destructive px-1.5 py-0.5 text-[11px] font-medium text-destructive-foreground">
+              -{Math.round((1 - product.sale_price / product.regular_price) * 100)}%
+            </span>
+          )}
+        </div>
+      ) : product.current_price !== null ? (
+        <span className="text-[24px] font-semibold text-foreground">
+          ${product.current_price.toFixed(2)}
+        </span>
+      ) : (
+        <span className="text-[13px] text-muted-foreground">Price not set</span>
+      )}
+    </PriceGate>
+  );
+}
+
+// ─── Qty Stepper ─────────────────────────────────────────────────────────────
+
+function QtyStepper({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="inline-flex items-center overflow-hidden rounded-md border border-input bg-background shadow-xs">
+      <button
+        onClick={() => onChange(Math.max(0, value - 1))}
+        disabled={disabled || value <= 0}
+        aria-label="Decrease quantity"
+        className="w-8 h-8 flex items-center justify-center text-[14px] text-foreground hover:bg-muted transition-colors disabled:opacity-30"
+      >
+        −
+      </button>
+      <span className="w-10 text-center text-[13px] text-foreground border-x border-border h-8 flex items-center justify-center">
+        {value}
+      </span>
+      <button
+        onClick={() => onChange(value + 1)}
+        disabled={disabled}
+        aria-label="Increase quantity"
+        className="w-8 h-8 flex items-center justify-center text-[14px] text-foreground hover:bg-muted transition-colors disabled:opacity-30"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
+// ─── Simple Product Panel ────────────────────────────────────────────────────
+
+function SimpleAddToCart({ product }: { product: Product }) {
+  const [qty, setQty] = useState(0);
+  const { addItem } = useCart();
+
+  const price = product.current_price ?? product.sale_price ?? 0;
+
+  const handleAdd = () => {
+    if (qty === 0) return;
+    addItem(
+      {
+        product_id: product.id,
+        name: product.name,
+        sku: product.sku,
+        image: product.image,
+        price,
+        parent_id: product.parent_id,
+        parent_name: null,
+      },
+      qty
+    );
+    setQty(0);
+  };
+
+  return (
+    <div className="flex items-center gap-3 mt-4">
+      <QtyStepper value={qty} onChange={setQty} disabled={!product.in_stock} />
+      <button
+        onClick={handleAdd}
+        disabled={qty === 0 || !product.in_stock}
+        className="flex-1 rounded-md bg-primary px-6 py-2 text-[11px] font-medium tracking-[0.08em] uppercase text-primary-foreground shadow-xs hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {!product.in_stock ? "Out of stock" : "Add to cart"}
+      </button>
+    </div>
+  );
+}
+
+// ─── Grouped Variant Table ───────────────────────────────────────────────────
+
+function GroupedVariantTable({ product }: { product: Product }) {
+  const children = product.children ?? [];
+  const [qtys, setQtys] = useState<Record<number, number>>({});
+  const { addItem } = useCart();
+
+  const setQty = (id: number, qty: number) =>
+    setQtys((prev) => ({ ...prev, [id]: qty }));
+
+  const selectedCount = Object.values(qtys).filter((q) => q > 0).length;
+
+  const handleAddAll = () => {
+    children.forEach((child) => {
+      const qty = qtys[child.id] ?? 0;
+      if (qty === 0) return;
+      const price = child.current_price ?? child.sale_price ?? 0;
+      addItem(
+        {
+          product_id: child.id,
+          name: child.name,
+          sku: child.sku,
+          image: child.image ?? product.image,
+          price,
+          parent_id: product.id,
+          parent_name: product.name,
+        },
+        qty
+      );
+    });
+    setQtys({});
+  };
+
+  const TD = "px-3 py-2 border-b border-border text-left align-middle";
+  const TH = "px-3 py-2 text-[10px] font-medium tracking-[0.08em] uppercase text-muted-foreground border-b border-border bg-muted/60 text-left";
+
+  if (children.length === 0) {
+    return (
+      <p className="text-[12px] text-muted-foreground mt-4">No variants available.</p>
+    );
+  }
+
+  return (
+    <div className="mt-6">
+      <div className="text-[10px] font-medium tracking-[0.08em] uppercase text-muted-foreground pb-2 mb-0">
+        Variants · {children.length} SKUs
+      </div>
+      <div className="overflow-x-auto rounded-lg border border-border bg-card shadow-sm">
+        <table className="w-full text-[12px]">
+          <thead>
+            <tr>
+              <th className={TH}>Variant</th>
+              <th className={`${TH} hidden sm:table-cell`}>SKU</th>
+              <th className={`${TH} text-right`}>Price</th>
+              <th className={`${TH} text-right`}>Stock</th>
+              <th className={`${TH} text-right`}>Qty</th>
+              <th className={`${TH} hidden sm:table-cell text-right`}>Line</th>
+            </tr>
+          </thead>
+          <tbody>
+            {children.map((child) => {
+              const qty = qtys[child.id] ?? 0;
+              const price = child.current_price ?? child.sale_price ?? 0;
+              return (
+                <tr key={child.id} className="hover:bg-muted/40 transition-colors">
+                  <td className={TD}>
+                    <div className="flex items-center gap-2">
+                      {(child.image ?? product.image) ? (
+                        <div className="w-8 h-8 relative shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+                          <ProductImage
+                            src={(child.image ?? product.image)!}
+                            variants={child.image ? child.image_variants : product.image_variants}
+                            alt={child.name}
+                            sizes="32px"
+                            className="object-contain"
+                          />
+                        </div>
+                      ) : null}
+                      <span className="text-foreground">{child.name}</span>
+                    </div>
+                  </td>
+                  <td className={`${TD} hidden sm:table-cell text-muted-foreground`}>{child.sku}</td>
+                  <td className={`${TD} text-right`}>
+                    <PriceGate pricesVisible={child.prices_visible}>
+                      {child.on_sale && child.sale_price !== null ? (
+                        <span className="text-destructive font-semibold">${child.sale_price.toFixed(2)}</span>
+                      ) : price > 0 ? (
+                        <span>${price.toFixed(2)}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </PriceGate>
+                  </td>
+                  <td className={`${TD} text-right`}>
+                    <StockDot inStock={child.in_stock} stockQuantity={child.stock_quantity} />
+                  </td>
+                  <td className={`${TD} text-right`}>
+                    <QtyStepper value={qty} onChange={(n) => setQty(child.id, n)} disabled={!child.in_stock} />
+                  </td>
+                  <td className={`${TD} hidden sm:table-cell text-right text-foreground`}>
+                    {qty > 0 && price > 0 ? `$${(qty * price).toFixed(2)}` : "—"}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <span className="text-[11px] text-muted-foreground">
+          {selectedCount} variant{selectedCount !== 1 ? "s" : ""} selected
+        </span>
+        <button
+          onClick={handleAddAll}
+          disabled={selectedCount === 0}
+          className="rounded-md bg-primary px-6 py-2 text-[11px] font-medium tracking-[0.08em] uppercase text-primary-foreground shadow-xs hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Add to cart ({selectedCount})
+        </button>
+      </div>
+
+      <CartBar />
+    </div>
+  );
+}
+
+// ─── Spec Strip ──────────────────────────────────────────────────────────────
+
+function SpecStrip({ attributes }: { attributes?: Record<string, string> }) {
+  if (!attributes || Object.keys(attributes).length === 0) return null;
+
+  const entries = Object.entries(attributes);
+
+  return (
+    <div className="border-t border-border bg-card mt-10">
+      <div className="px-4 md:px-6 lg:px-8 py-4 border-b border-border">
+        <span className="text-[10px] font-medium tracking-[0.1em] uppercase text-muted-foreground">
+          Product specifications
+        </span>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 sm:divide-x divide-border">
+        {entries.map(([key, value]) => (
+          <div key={key} className="px-4 md:px-6 lg:px-8 py-5 border-b border-border">
+            <div className="text-[10px] font-medium tracking-[0.06em] uppercase text-muted-foreground mb-1">
+              {key}
+            </div>
+            <div className="text-[13px] text-foreground">{value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Product Detail ──────────────────────────────────────────────────────
+
+function ProductDetail({ id }: { id: string }) {
+  const { data: product, isLoading, isError } = useProduct(id);
+  const { isAuthenticated } = useAuth();
+  // Server-backed wishlist shared with every device (state comes from the account, not this page).
+  const wishlistIds = useWishlistIds();
+  const toggleWishlistItem = useToggleWishlist();
+  const wishlisted = wishlistIds.has(Number(id));
+  const toggleWishlist = () => {
+    if (!product) return;
+    void toggleWishlistItem(product.id, { name: product.name, sku: product.sku, image: product.image, in_stock: product.in_stock })
+      .catch(() => undefined); // the hook already restored the previous state
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen animate-pulse bg-muted/30 pb-28 md:pb-20">
+        <div className="border-b border-border bg-card px-4 py-3.5 md:px-6 lg:px-8"><div className="h-6 w-2/3 rounded bg-muted" /></div>
+        <div className="grid grid-cols-1 gap-0 border-b border-border bg-card md:grid-cols-2">
+          <div className="border-b border-border bg-card p-4 md:border-b-0 md:border-r md:p-6 lg:p-8"><div className="aspect-[4/3] rounded-lg bg-muted" /></div>
+          <div className="space-y-4 bg-card p-5 md:p-6 lg:p-8">
+            <div className="h-4 bg-muted rounded w-1/3" />
+            <div className="h-8 bg-muted rounded w-3/4" />
+            <div className="h-4 bg-muted rounded w-1/4" />
+            <div className="h-6 bg-muted rounded w-1/3" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !product) {
+    return (
+      <div className="flex flex-col items-center justify-center h-60 gap-4">
+        <p className="text-[12px] text-muted-foreground">Product not found.</p>
+        <Link href="/shop" className="text-[11px] font-medium text-primary hover:text-primary/80">
+          ← Back to shop
+        </Link>
+      </div>
+    );
+  }
+
+  const images = product.images ?? (product.image ? [{ url: product.image, is_primary: true, variants: product.image_variants }] : []);
+  const description = product.short_description || product.description;
+
+  const crumbs = [
+    { label: "Shop", href: "/shop" },
+    ...(product.category ? [{ label: product.category.name, href: `/category/${product.category.id}` }] : []),
+    ...(product.brand ? [{ label: product.brand.name, href: `/brand/${product.brand.id}` }] : []),
+    { label: product.name },
+  ];
+
+  return (
+    <div className="min-h-screen bg-muted/30 pb-28 md:pb-20">
+      {/* Breadcrumb */}
+      <div className="px-4 md:px-6 lg:px-8 py-3.5 border-b border-border bg-card">
+        <Breadcrumb items={crumbs} singleLine />
+      </div>
+
+      {/* Hero */}
+      <div className="grid grid-cols-1 gap-0 border-b border-border bg-card shadow-sm md:grid-cols-2">
+        {/* Left: images */}
+        <div className="min-w-0 p-4 md:p-6 lg:p-8 md:border-r border-b md:border-b-0 border-border bg-card">
+          <ImageGallery images={images} name={product.name} />
+        </div>
+
+        {/* Right: summary */}
+        <div className="min-w-0 p-5 md:p-6 lg:p-8 bg-card">
+          {/* Brand */}
+          {product.brand && (
+            <Link
+              href={`/brand/${product.brand.id}`}
+              className="inline-flex min-h-6 items-center text-[10.5px] font-medium tracking-[0.1em] uppercase text-primary hover:text-primary/80 transition-colors"
+            >
+              {product.brand.name}
+            </Link>
+          )}
+
+          {/* Name */}
+          <h1 className="text-[26px] md:text-[30px] lg:text-[38px] leading-[1.1] font-semibold tracking-tight mt-1 text-foreground">
+            {product.name}
+          </h1>
+
+          {/* SKU */}
+          <div className="text-[10.5px] font-medium tracking-[0.08em] text-muted-foreground uppercase mt-2">
+            SKU · {product.sku}
+          </div>
+
+          {/* Sale badge */}
+          {product.on_sale && (
+            <span className="inline-block mt-3 rounded-sm bg-destructive px-1.5 py-0.5 text-[9px] font-medium tracking-[0.06em] text-destructive-foreground">
+              SALE
+            </span>
+          )}
+
+          {/* Price */}
+          <div className="mt-3">
+            <PriceBlock product={product} />
+          </div>
+
+          {/* Stock */}
+          <div className="mt-3">
+            <StockDot inStock={product.in_stock} stockQuantity={product.stock_quantity} />
+          </div>
+
+          {/* Description */}
+          {description && (
+            <p className="mt-4 text-[13px] text-muted-foreground leading-relaxed border-t border-border pt-4">
+              {description.length > 400 ? description.slice(0, 400) + "…" : description}
+            </p>
+          )}
+
+          {/* Simple product: qty + add to cart */}
+          {product.type === "simple" && <SimpleAddToCart product={product} />}
+
+          {/* Actions */}
+          <div className="mt-5 flex items-center gap-4 pt-4 border-t border-border">
+            <button
+              onClick={() => { if (isAuthenticated) toggleWishlist(); }}
+              aria-pressed={wishlisted}
+              title={isAuthenticated ? (wishlisted ? "Remove from wishlist" : "Add to wishlist") : "Sign in to wishlist"}
+              className={`flex min-h-10 lg:min-h-0 items-center gap-1.5 text-[10.5px] font-medium tracking-[0.06em] uppercase transition-colors disabled:opacity-50 ${
+                wishlisted ? "text-destructive" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Heart size={13} fill={wishlisted ? "currentColor" : "none"} />
+              {wishlisted ? "Wishlisted" : "Wishlist"}
+            </button>
+            <button className="flex min-h-10 lg:min-h-0 items-center gap-1.5 text-[10.5px] font-medium tracking-[0.06em] uppercase text-muted-foreground hover:text-foreground transition-colors">
+              <GitCompare size={13} />
+              Compare
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Grouped variant table */}
+      {product.type === "grouped" && (
+        <div className="px-4 md:px-6 lg:px-8 py-6 overflow-x-auto">
+          <GroupedVariantTable product={product} />
+        </div>
+      )}
+
+      {/* Spec strip */}
+      <SpecStrip attributes={product.attributes} />
+
+      {/* CartBar for simple products */}
+      {product.type === "simple" && <CartBar />}
+    </div>
+  );
+}
+
+export default function ProductPage({ params }: Props) {
+  const { id } = use(params);
+  return (
+    <Suspense>
+      <ProductDetail id={id} />
+    </Suspense>
+  );
+}
