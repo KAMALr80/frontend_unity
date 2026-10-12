@@ -2,10 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, ChevronRight, LayoutGrid, Menu, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, ChevronDown, ChevronRight, LayoutGrid, Menu, X } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useCategories, type Category } from "@/hooks/useCategories";
 import { useSiteConfig } from "@/context/SiteConfigContext";
+
+/** Menus with more items than this open as a wide five-column panel instead of a scrolling list. */
+const WIDE_MENU_ITEMS = 24;
 
 const NAV_LINK = "flex h-full items-center whitespace-nowrap px-3 text-sm font-bold text-white no-underline transition-colors hover:text-gold";
 
@@ -15,6 +18,29 @@ function matches(category: Category, keywords: readonly string[]) {
 }
 function categoryItems(category: Category) {
   return category.children && category.children.length > 0 ? category.children : [category];
+}
+
+/**
+ * Compact dropdown that hangs directly under its menu item (same pattern as the live site): a white card with a gold
+ * top edge, one link per row, and a quiet "view all" footer. Long lists switch to two columns, and very long ones (Smoke Shop) to five so nothing needs scrolling.
+ */
+function DropPanel({ className = "", columns = 1, footer, onNavigate, children }: { className?: string; columns?: 1 | 2 | 5; footer: { label: string; href: string }; onNavigate: () => void; children: ReactNode }) {
+  return (
+    <div className={`absolute top-full z-40 ${columns === 5 ? "" : "max-h-[70vh] overflow-y-auto"} border-t-2 border-gold bg-background text-foreground shadow-[0_18px_32px_-12px_rgba(0,0,0,0.4)] ${className}`}>
+      <div className={columns === 5 ? "grid grid-cols-5 gap-x-2 px-3 py-3" : columns === 2 ? "grid grid-cols-2 py-2" : "py-2"}>{children}</div>
+      <Link href={footer.href} onClick={onNavigate} className="flex items-center justify-between gap-2 border-t border-border bg-muted/60 px-5 py-3 text-xs font-bold uppercase tracking-[0.06em] text-primary no-underline transition-colors hover:bg-muted hover:text-foreground">
+        {footer.label}<ArrowRight size={13} />
+      </Link>
+    </div>
+  );
+}
+
+function DropLink({ href, onNavigate, children }: { href: string; onNavigate: () => void; children: ReactNode }) {
+  return (
+    <Link href={href} onClick={onNavigate} className="block border-l-2 border-transparent px-5 py-2.5 text-[13px] font-semibold uppercase leading-snug tracking-[0.02em] text-foreground no-underline transition-colors hover:border-gold hover:bg-muted hover:text-primary">
+      {children}
+    </Link>
+  );
 }
 
 export function NavBar() {
@@ -38,6 +64,15 @@ export function NavBar() {
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    if (!openMenu) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenMenu(null);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [openMenu]);
 
   const groups = useMemo(
     () =>
@@ -64,68 +99,35 @@ export function NavBar() {
   return (
     <nav aria-label="Main" className="sticky top-0 z-40 border-t border-white/10 bg-black text-white shadow-sm">
       <div className="mx-auto hidden h-14 max-w-[1320px] items-stretch gap-1 px-6 xl:flex">
-        {/* All categories: every top-level category with its first sub-categories. */}
-        <div className="static flex items-center" onMouseEnter={() => setOpenMenu(ALL)} onMouseLeave={closeMenus}>
+        {/* All categories: the CMS list when set, otherwise the top-level categories. */}
+        <div className="relative flex items-center" onMouseEnter={() => setOpenMenu(ALL)} onMouseLeave={closeMenus}>
           <button type="button" onClick={() => setOpenMenu((value) => (value === ALL ? null : ALL))} onFocus={() => setOpenMenu(ALL)} aria-expanded={openMenu === ALL} className="flex h-10 min-w-[240px] items-center justify-between gap-3 bg-gold px-6 text-sm font-bold text-white transition hover:brightness-110">
-            <span className="inline-flex items-center gap-2"><LayoutGrid size={15} /> All Categories</span><ChevronDown size={14} />
+            <span className="inline-flex items-center gap-2"><LayoutGrid size={15} /> All Categories</span><ChevronDown size={14} className={`transition-transform ${openMenu === ALL ? "rotate-180" : ""}`} />
           </button>
           {openMenu === ALL && (
-            <div className="absolute left-1/2 top-full max-h-[70vh] w-[min(1200px,calc(100vw-32px))] -translate-x-1/2 overflow-y-auto border border-t-0 border-border bg-background p-6 text-foreground shadow-lg">
-              {allCategoryLinks.length > 0 ? (
-                <ul className="grid grid-cols-4 gap-x-8 gap-y-2">
-                  {allCategoryLinks.map((link) => <li key={`${link.label}-${link.url}`}><Link href={link.url} onClick={closeMenus} className="block border-b border-border py-2 text-sm font-bold uppercase text-foreground no-underline transition-colors hover:text-primary">{link.label}</Link></li>)}
-                </ul>
-              ) : categories.length > 0 ? (
-                <div className="grid grid-cols-4 gap-x-8 gap-y-6">
-                  {categories.map((category) => (
-                    <div key={category.id} className="min-w-0">
-                      <Link href={`/category/${category.id}`} onClick={closeMenus} className="block border-b border-border pb-1.5 text-sm font-bold uppercase text-foreground no-underline transition-colors hover:text-primary">{category.name}</Link>
-                      <ul className="mt-2 space-y-1">
-                        {(category.children ?? []).slice(0, 5).map((child) => (
-                          <li key={child.id}><Link href={`/category/${child.id}`} onClick={closeMenus} className="block truncate text-[13px] text-muted-foreground no-underline transition-colors hover:text-primary">{child.name}</Link></li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              ) : <p className="py-6 text-sm text-muted-foreground">Categories are loading…</p>}
-            </div>
+            <DropPanel className="left-0 w-[300px]" footer={{ label: "Shop everything", href: "/shop" }} onNavigate={closeMenus}>
+              {allCategoryLinks.length > 0
+                ? allCategoryLinks.map((link) => <DropLink key={`${link.label}-${link.url}`} href={link.url} onNavigate={closeMenus}>{link.label}</DropLink>)
+                : categories.length > 0
+                  ? categories.map((category) => <DropLink key={category.id} href={`/category/${category.id}`} onNavigate={closeMenus}>{category.name}</DropLink>)
+                  : <p className="px-5 py-4 text-sm text-muted-foreground">Categories are loading…</p>}
+            </DropPanel>
           )}
         </div>
 
         {linksBefore.map((link) => <Link key={`${link.label}-${link.url}`} href={link.url} className={NAV_LINK}>{link.label}</Link>)}
 
         {groups.map((group) => (
-          <div key={group.label} className="static" onMouseEnter={() => setOpenMenu(group.label)} onMouseLeave={closeMenus}>
-            <button type="button" onClick={() => setOpenMenu((value) => (value === group.label ? null : group.label))} onFocus={() => setOpenMenu(group.label)} aria-expanded={openMenu === group.label} className={`${NAV_LINK} gap-1`}>
-              {group.label}<ChevronDown size={12} />
+          <div key={group.label} className={group.items.length > WIDE_MENU_ITEMS ? "static" : "relative"} onMouseEnter={() => setOpenMenu(group.label)} onMouseLeave={closeMenus}>
+            <button type="button" onClick={() => setOpenMenu((value) => (value === group.label ? null : group.label))} onFocus={() => setOpenMenu(group.label)} aria-expanded={openMenu === group.label} className={`${NAV_LINK} gap-1 ${openMenu === group.label ? "text-gold" : ""}`}>
+              {group.label}<ChevronDown size={12} className={`transition-transform ${openMenu === group.label ? "rotate-180" : ""}`} />
             </button>
             {openMenu === group.label && (
-              <div className="absolute left-1/2 top-full w-[min(1120px,calc(100vw-32px))] -translate-x-1/2 overflow-hidden border border-t-0 border-border bg-background text-foreground shadow-lg">
-                <div className="grid grid-cols-[1fr_220px]">
-                  <div className="p-6">
-                    <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
-                      <h2 className="text-sm font-bold uppercase tracking-[0.1em] text-foreground">{group.label}</h2>
-                      <Link href={group.href} onClick={closeMenus} className="text-xs font-bold text-primary transition-colors hover:text-foreground">View all</Link>
-                    </div>
-                    <div className="grid grid-cols-3 gap-x-6 gap-y-2">
-                      {group.items.length > 0 ? group.items.map((category) => (
-                        <Link key={category.id} href={`/category/${category.id}`} onClick={closeMenus} className="flex min-h-12 items-center gap-3 px-2 py-2 text-sm font-medium text-foreground no-underline transition-colors hover:bg-muted hover:text-primary">
-                          <span className="relative h-9 w-9 shrink-0 overflow-hidden border border-border bg-muted">
-                            {category.image ? <Image src={category.image} alt="" fill sizes="36px" className="object-contain" /> : <span className="flex h-full items-center justify-center text-xs font-bold text-primary">{category.name.slice(0, 1)}</span>}
-                          </span>
-                          <span>{category.name}</span>
-                        </Link>
-                      )) : <p className="col-span-3 py-8 text-sm text-muted-foreground">Categories are loading…</p>}
-                    </div>
-                  </div>
-                  <Link href={group.href} onClick={closeMenus} className="flex flex-col justify-end border-l border-border bg-black p-6 no-underline transition-colors hover:bg-neutral-900">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-gold">Featured</span>
-                    <span className="mt-2 text-2xl font-bold uppercase leading-tight text-white">{group.label}</span>
-                    <span className="mt-4 inline-flex items-center gap-1 text-xs font-bold uppercase text-gold">Shop now <ChevronRight size={14} /></span>
-                  </Link>
-                </div>
-              </div>
+              <DropPanel className={group.items.length > WIDE_MENU_ITEMS ? "left-1/2 w-[min(1272px,calc(100vw-48px))] -translate-x-1/2" : `left-0 ${group.items.length > 10 ? "w-[500px]" : "w-[250px]"}`} columns={group.items.length > WIDE_MENU_ITEMS ? 5 : group.items.length > 10 ? 2 : 1} footer={{ label: `View all ${group.label}`, href: group.href }} onNavigate={closeMenus}>
+                {group.items.length > 0
+                  ? group.items.map((category) => <DropLink key={category.id} href={`/category/${category.id}`} onNavigate={closeMenus}>{category.name}</DropLink>)
+                  : <p className="px-5 py-4 text-sm text-muted-foreground">Categories are loading…</p>}
+              </DropPanel>
             )}
           </div>
         ))}
