@@ -64,10 +64,17 @@ export function BrowseLayout({
   const [qtyMap, setQtyMap] = useState<Record<number, number>>({});
   const [brandSearch, setBrandSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [view, setView] = useState<"list" | "grid">(() => {
-    if (typeof window === "undefined") return "list";
-    return (localStorage.getItem("fastweb_view") as "list" | "grid") ?? "list";
-  });
+
+const [view, setView] = useState<"list" | "grid">("list");
+
+useEffect(() => {
+  const savedView = localStorage.getItem("fastweb_view");
+
+  if (savedView === "list" || savedView === "grid") {
+    setView(savedView);
+  }
+}, []);
+
   const { addItem } = useCart();
 
   useEffect(() => {
