@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRequireAuth } from "@/components/auth/withAuth";
 import { PageHeader } from "@/components/shared/PageHeader";
 import api from "@/lib/axios";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 
 export default function ChangePasswordPage() {
   const { isLoading } = useRequireAuth();
@@ -67,8 +68,7 @@ export default function ChangePasswordPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label htmlFor="password-current-password" className={LABEL}>Current Password</label>
-            <input id="password-current-password"
-              type="password"
+            <PasswordInput id="password-current-password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               className={INPUT}
@@ -82,8 +82,7 @@ export default function ChangePasswordPage() {
 
           <div>
             <label htmlFor="password-new-password" className={LABEL}>New Password</label>
-            <input id="password-new-password"
-              type="password"
+            <PasswordInput id="password-new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               className={INPUT}
@@ -98,8 +97,7 @@ export default function ChangePasswordPage() {
 
           <div>
             <label htmlFor="password-confirm-new-password" className={LABEL}>Confirm New Password</label>
-            <input id="password-confirm-new-password"
-              type="password"
+            <PasswordInput id="password-confirm-new-password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               className={INPUT}

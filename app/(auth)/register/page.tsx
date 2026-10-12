@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Loader2, CheckCircle } from "lucide-react";
 import api from "@/lib/axios";
 import { Logo } from "@/components/layout/Logo";
+import { FormAlert } from "@/components/shared/FormAlert";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 
 export default function RegisterPage() {
   const [form, setForm] = useState({
@@ -116,9 +118,7 @@ export default function RegisterPage() {
             </p>
 
             {serverError && (
-              <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 p-3">
-                <p className="text-[13px] text-destructive">{serverError}</p>
-              </div>
+              <FormAlert className="mb-4">{serverError}</FormAlert>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-3.5">
@@ -136,7 +136,7 @@ export default function RegisterPage() {
                   autoComplete="name"
                   className={`w-full h-10 rounded-md border bg-background px-3 text-[14px] text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 ${errors.name ? "border-destructive" : "border-input"}`}
                 />
-                {errors.name && <p className="text-[11px] text-red-600 mt-1">{errors.name}</p>}
+                {errors.name && <p className="text-[11px] text-destructive mt-1">{errors.name}</p>}
               </div>
 
               {/* Email */}
@@ -153,7 +153,7 @@ export default function RegisterPage() {
                   autoComplete="email"
                   className={`w-full h-10 rounded-md border bg-background px-3 text-[14px] text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 ${errors.email ? "border-destructive" : "border-input"}`}
                 />
-                {errors.email && <p className="text-[11px] text-red-600 mt-1">{errors.email}</p>}
+                {errors.email && <p className="text-[11px] text-destructive mt-1">{errors.email}</p>}
               </div>
 
               {/* Password */}
@@ -161,8 +161,7 @@ export default function RegisterPage() {
                 <label htmlFor="register-password" className="block text-[12px] font-medium text-foreground mb-1.5">
                   Password
                 </label>
-                <input id="register-password"
-                  type="password"
+                <PasswordInput id="register-password"
                   value={form.password}
                   onChange={update("password")}
                   placeholder="••••••••"
@@ -171,7 +170,7 @@ export default function RegisterPage() {
                   className={`w-full h-10 rounded-md border bg-background px-3 text-[14px] text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 ${errors.password ? "border-destructive" : "border-input"}`}
                 />
                 {errors.password ? (
-                  <p className="text-[11px] text-red-600 mt-1">{errors.password}</p>
+                  <p className="text-[11px] text-destructive mt-1">{errors.password}</p>
                 ) : (
                   <p className="text-[11px] text-muted-foreground mt-1">Minimum 8 characters.</p>
                 )}
@@ -182,8 +181,7 @@ export default function RegisterPage() {
                 <label htmlFor="register-confirm-password" className="block text-[12px] font-medium text-foreground mb-1.5">
                   Confirm password
                 </label>
-                <input id="register-confirm-password"
-                  type="password"
+                <PasswordInput id="register-confirm-password"
                   value={form.password_confirmation}
                   onChange={update("password_confirmation")}
                   placeholder="••••••••"
@@ -192,7 +190,7 @@ export default function RegisterPage() {
                   className={`w-full h-10 rounded-md border bg-background px-3 text-[14px] text-foreground shadow-xs outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/20 ${errors.password_confirmation ? "border-destructive" : "border-input"}`}
                 />
                 {errors.password_confirmation && (
-                  <p className="text-[11px] text-red-600 mt-1">{errors.password_confirmation}</p>
+                  <p className="text-[11px] text-destructive mt-1">{errors.password_confirmation}</p>
                 )}
               </div>
 

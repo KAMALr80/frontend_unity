@@ -6,6 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { AUTH_BUTTON, AUTH_INPUT, AuthCard } from "@/components/auth/AuthCard";
 import api from "@/lib/axios";
+import { FormAlert } from "@/components/shared/FormAlert";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 
 /** Opened from the password-reset email: ?token=…&email=… */
 function ResetPasswordForm() {
@@ -58,15 +60,15 @@ function ResetPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3"><p className="text-[13px] text-destructive">{error}</p></div>}
+      {error && <FormAlert>{error}</FormAlert>}
       <p className="text-[12px] text-muted-foreground">Account: <span className="font-medium text-foreground">{email}</span></p>
       <div>
         <label htmlFor="reset-password" className="mb-1.5 block text-[12px] font-medium text-foreground">New password</label>
-        <input id="reset-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} autoComplete="new-password" className={AUTH_INPUT} />
+        <PasswordInput id="reset-password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} autoComplete="new-password" className={AUTH_INPUT} />
       </div>
       <div>
         <label htmlFor="reset-password-confirmation" className="mb-1.5 block text-[12px] font-medium text-foreground">Confirm new password</label>
-        <input id="reset-password-confirmation" type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} required minLength={8} autoComplete="new-password" className={AUTH_INPUT} />
+        <PasswordInput id="reset-password-confirmation" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} required minLength={8} autoComplete="new-password" className={AUTH_INPUT} />
       </div>
       <button type="submit" disabled={loading} aria-busy={loading || undefined} className={AUTH_BUTTON}>
         {loading && <Loader2 size={14} className="animate-spin" />}

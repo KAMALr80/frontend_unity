@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { Logo } from "@/components/layout/Logo";
+import { FormAlert } from "@/components/shared/FormAlert";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 
 /**
  * Only same-site paths are allowed after login. Resolving against the current origin also rejects
@@ -108,9 +110,7 @@ export default function LoginPage() {
 
         {/* General error */}
         {error && (
-          <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/5 p-3">
-            <p className="text-[13px] text-destructive">{error}</p>
-          </div>
+          <FormAlert className="mb-4">{error}</FormAlert>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -138,8 +138,7 @@ export default function LoginPage() {
                 Forgot password?
               </Link>
             </div>
-            <input id="login-password"
-              type="password"
+            <PasswordInput id="login-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"

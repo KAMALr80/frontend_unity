@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Loader2 } from "lucide-react";
 import { AUTH_BUTTON, AUTH_INPUT, AuthCard } from "@/components/auth/AuthCard";
 import api from "@/lib/axios";
+import { FormAlert } from "@/components/shared/FormAlert";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -37,7 +38,7 @@ export default function ForgotPasswordPage() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3"><p className="text-[13px] text-destructive">{error}</p></div>}
+          {error && <FormAlert>{error}</FormAlert>}
           <div>
             <label htmlFor="forgot-email" className="mb-1.5 block text-[12px] font-medium text-foreground">Email address</label>
             <input id="forgot-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@company.com" required autoComplete="email" className={AUTH_INPUT} />
