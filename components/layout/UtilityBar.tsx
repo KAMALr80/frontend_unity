@@ -94,19 +94,19 @@ export function UtilityBar() {
         </div>
       )}
 
-      <div className="mx-auto flex max-w-[1320px] items-center gap-3 px-3 py-3 sm:px-6 lg:gap-8">
+      <div className="mx-auto flex max-w-[1320px] items-center gap-2 px-3 py-3 sm:gap-3 sm:px-6 lg:gap-8">
         <Logo loading="eager" />
         <SearchForm idSuffix="desktop" className="mx-auto hidden w-full max-w-2xl lg:flex" />
-        <div className="ml-auto flex items-center gap-1 sm:gap-2">
+        <div className="ml-auto flex shrink-0 items-center sm:gap-2">
           {isAuthenticated ? (
             <>
-              <Link href="/wishlist" aria-label={`${wishlistCount} items in wishlist`} className="relative grid h-11 w-11 place-items-center text-white no-underline transition-colors hover:text-gold">
+              <Link href="/wishlist" aria-label={`${wishlistCount} items in wishlist`} className="relative grid h-11 w-10 place-items-center text-white sm:w-11 no-underline transition-colors hover:text-gold">
                 <Heart size={22} strokeWidth={1.6} />
                 {wishlistCount > 0 && <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-white">{wishlistCount}</span>}
               </Link>
               <UserAccountMenu />
               <Link href="/cart" aria-label={`${itemCount} items in cart`} className="flex items-center gap-2 text-white no-underline transition-colors hover:text-gold">
-                <span className="relative grid h-11 w-11 place-items-center">
+                <span className="relative grid h-11 w-10 place-items-center sm:w-11">
                   <ShoppingBag size={22} strokeWidth={1.6} />
                   <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-white">{itemCount}</span>
                 </span>

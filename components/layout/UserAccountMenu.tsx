@@ -37,7 +37,7 @@ export function UserAccountMenu() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1 border-none bg-transparent px-2 py-2.5 text-[11px] font-medium uppercase tracking-[0.04em] text-white/85 transition-colors hover:text-gold lg:min-h-0"
+        className="flex min-h-11 min-w-10 cursor-pointer items-center justify-center gap-1 border-none bg-transparent px-1.5 py-2.5 sm:min-w-11 sm:px-2 text-[11px] font-medium uppercase tracking-[0.04em] text-white/85 transition-colors hover:text-gold lg:min-h-0"
         aria-haspopup="true"
         aria-expanded={open}
       >

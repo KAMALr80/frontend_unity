@@ -30,8 +30,8 @@ export function Logo({ className = "h-11 sm:h-14", loading = "lazy" }: LogoProps
       )}
       {site.site_name && (
         <span className="flex min-w-0 flex-col justify-center leading-none text-gold">
-          <span className="whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.1em] min-[360px]:text-[15px] min-[420px]:text-xl min-[420px]:tracking-[0.18em] sm:text-2xl">{site.site_name}</span>
-          {site.site_tagline && <span className="mt-1 hidden whitespace-nowrap text-[8px] font-medium tracking-[0.12em] text-gold/90 min-[420px]:block sm:text-[9px]">{site.site_tagline}</span>}
+          <span className="whitespace-nowrap text-[13px] font-semibold uppercase tracking-[0.08em] min-[400px]:text-[15px] min-[480px]:text-xl min-[480px]:tracking-[0.18em] sm:text-2xl">{site.site_name}</span>
+          {site.site_tagline && <span className="mt-1 hidden whitespace-nowrap text-[8px] font-medium tracking-[0.12em] text-gold/90 sm:block sm:text-[9px]">{site.site_tagline}</span>}
         </span>
       )}
     </Link>
