@@ -17,9 +17,9 @@ export function CartBar({ onAddToCart, cta = "ADD TO CART", selectedCount }: Car
   if (itemCount === 0 && selectedCount === undefined) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-border bg-card/95 px-4 py-3 text-[11.5px] tracking-[0.04em] text-card-foreground shadow-[0_-4px_18px_rgba(0,0,0,0.10)] backdrop-blur-md md:px-8">
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-between gap-x-3 border-t border-border bg-card/95 px-3 py-2.5 text-[11.5px] sm:px-4 sm:py-3 tracking-[0.04em] text-card-foreground shadow-[0_-4px_18px_rgba(0,0,0,0.10)] backdrop-blur-md md:px-8">
       {/* Left — cart summary */}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 md:gap-6">
+      <div className="flex min-w-0 items-center gap-x-3 sm:gap-x-4 md:gap-6">
         <span className="flex items-center gap-2">
           <ShoppingCart size={14} className="text-muted-foreground" />
           <span className="font-medium text-muted-foreground">CART</span>
@@ -42,14 +42,14 @@ export function CartBar({ onAddToCart, cta = "ADD TO CART", selectedCount }: Car
         {onAddToCart && (
           <button
             onClick={onAddToCart}
-            className="rounded-md bg-primary px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+            className="rounded-md bg-primary px-3 py-2 text-[11px] sm:px-5 font-semibold uppercase tracking-[0.08em] text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
           >
             {cta}
           </button>
         )}
         <a
           href="/cart"
-          className="rounded-md border border-border bg-background px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-foreground no-underline shadow-xs transition-colors hover:border-primary/50 hover:bg-accent"
+          className="rounded-md border border-border bg-background px-3 py-2 text-[11px] sm:px-5 font-semibold uppercase tracking-[0.08em] text-foreground no-underline shadow-xs transition-colors hover:border-primary/50 hover:bg-accent"
         >
           VIEW CART →
         </a>

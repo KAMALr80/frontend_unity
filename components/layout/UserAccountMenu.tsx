@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { User as UserIcon } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const MENU_ITEMS = [
@@ -36,17 +37,18 @@ export function UserAccountMenu() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex min-h-11 cursor-pointer items-center gap-1 border-none bg-transparent px-2 py-2.5 text-[11px] font-medium uppercase tracking-[0.04em] text-white/85 transition-colors hover:text-gold lg:min-h-0"
+        className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-1 border-none bg-transparent px-2 py-2.5 text-[11px] font-medium uppercase tracking-[0.04em] text-white/85 transition-colors hover:text-gold lg:min-h-0"
         aria-haspopup="true"
         aria-expanded={open}
       >
-        <span className="max-w-[64px] truncate sm:max-w-[160px]">{user?.name}</span>
+        <UserIcon size={22} strokeWidth={1.6} className="sm:hidden" aria-hidden="true" />
+        <span className="sr-only sm:not-sr-only sm:max-w-[160px] sm:truncate">{user?.name}</span>
         <svg
           width="8"
           height="5"
           viewBox="0 0 8 5"
           fill="none"
-          className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+          className={`hidden transition-transform duration-150 sm:block ${open ? "rotate-180" : ""}`}
         >
           <path d="M1 1l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>

@@ -145,23 +145,23 @@ function QtyStepper({
   disabled?: boolean;
 }) {
   return (
-    <div className="inline-flex items-center overflow-hidden rounded-md border border-input bg-background shadow-xs">
+    <div className="inline-flex shrink-0 items-center overflow-hidden rounded-md border border-input bg-background shadow-xs">
       <button
         onClick={() => onChange(Math.max(0, value - 1))}
         disabled={disabled || value <= 0}
         aria-label="Decrease quantity"
-        className="w-8 h-8 flex items-center justify-center text-[14px] text-foreground hover:bg-muted transition-colors disabled:opacity-30"
+        className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center text-[16px] text-foreground hover:bg-muted transition-colors disabled:opacity-30"
       >
         −
       </button>
-      <span className="w-10 text-center text-[13px] text-foreground border-x border-border h-8 flex items-center justify-center">
+      <span className="w-10 text-center text-[13px] text-foreground border-x border-border h-9 sm:h-8 flex items-center justify-center">
         {value}
       </span>
       <button
         onClick={() => onChange(value + 1)}
         disabled={disabled}
         aria-label="Increase quantity"
-        className="w-8 h-8 flex items-center justify-center text-[14px] text-foreground hover:bg-muted transition-colors disabled:opacity-30"
+        className="w-9 h-9 sm:w-8 sm:h-8 flex items-center justify-center text-[16px] text-foreground hover:bg-muted transition-colors disabled:opacity-30"
       >
         +
       </button>
@@ -241,6 +241,33 @@ function GroupedVariantTable({ product }: { product: Product }) {
     setQtys({});
   };
 
+  const variantImage = (child: Product) => ((child.image ?? product.image) ? (
+    <div className="w-10 h-10 sm:w-8 sm:h-8 relative shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+      <ProductImage
+        src={(child.image ?? product.image)!}
+        variants={child.image ? child.image_variants : product.image_variants}
+        alt={child.name}
+        sizes="40px"
+        className="object-contain"
+      />
+    </div>
+  ) : null);
+
+  const variantPrice = (child: Product) => {
+    const price = child.current_price ?? child.sale_price ?? 0;
+    return (
+      <PriceGate pricesVisible={child.prices_visible}>
+        {child.on_sale && child.sale_price !== null ? (
+          <span className="text-destructive font-semibold">${child.sale_price.toFixed(2)}</span>
+        ) : price > 0 ? (
+          <span>${price.toFixed(2)}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </PriceGate>
+    );
+  };
+
   const TD = "px-3 py-2 border-b border-border text-left align-middle";
   const TH = "px-3 py-2 text-[10px] font-medium tracking-[0.08em] uppercase text-muted-foreground border-b border-border bg-muted/60 text-left";
 
@@ -251,11 +278,35 @@ function GroupedVariantTable({ product }: { product: Product }) {
   }
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 pb-24">
       <div className="text-[10px] font-medium tracking-[0.08em] uppercase text-muted-foreground pb-2 mb-0">
         Variants · {children.length} SKUs
       </div>
-      <div className="overflow-x-auto rounded-lg border border-border bg-card shadow-sm">
+      {/* Phones: one card per variant, nothing scrolls sideways. */}
+      <ul className="overflow-hidden rounded-lg border border-border bg-card shadow-sm sm:hidden">
+        {children.map((child) => {
+          const qty = qtys[child.id] ?? 0;
+          const price = child.current_price ?? child.sale_price ?? 0;
+          return (
+            <li key={child.id} className="flex items-center gap-3 border-b border-border p-3 last:border-b-0">
+              {variantImage(child)}
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-medium leading-snug text-foreground">{child.name}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12px]">
+                  <span className="font-semibold text-foreground">{variantPrice(child)}</span>
+                  <StockDot inStock={child.in_stock} stockQuantity={child.stock_quantity} />
+                </div>
+                {qty > 0 && price > 0 && <p className="mt-0.5 text-[11px] text-muted-foreground">Line total ${(qty * price).toFixed(2)}</p>}
+              </div>
+              <div className="shrink-0">
+                <QtyStepper value={qty} onChange={(n) => setQty(child.id, n)} disabled={!child.in_stock} />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="hidden overflow-x-auto rounded-lg border border-border bg-card shadow-sm sm:block">
         <table className="w-full text-[12px]">
           <thead>
             <tr>
@@ -275,31 +326,13 @@ function GroupedVariantTable({ product }: { product: Product }) {
                 <tr key={child.id} className="hover:bg-muted/40 transition-colors">
                   <td className={TD}>
                     <div className="flex items-center gap-2">
-                      {(child.image ?? product.image) ? (
-                        <div className="w-8 h-8 relative shrink-0 overflow-hidden rounded-md border border-border bg-muted">
-                          <ProductImage
-                            src={(child.image ?? product.image)!}
-                            variants={child.image ? child.image_variants : product.image_variants}
-                            alt={child.name}
-                            sizes="32px"
-                            className="object-contain"
-                          />
-                        </div>
-                      ) : null}
+                      {variantImage(child)}
                       <span className="text-foreground">{child.name}</span>
                     </div>
                   </td>
                   <td className={`${TD} hidden sm:table-cell text-muted-foreground`}>{child.sku}</td>
                   <td className={`${TD} text-right`}>
-                    <PriceGate pricesVisible={child.prices_visible}>
-                      {child.on_sale && child.sale_price !== null ? (
-                        <span className="text-destructive font-semibold">${child.sale_price.toFixed(2)}</span>
-                      ) : price > 0 ? (
-                        <span>${price.toFixed(2)}</span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </PriceGate>
+                    {variantPrice(child)}
                   </td>
                   <td className={`${TD} text-right`}>
                     <StockDot inStock={child.in_stock} stockQuantity={child.stock_quantity} />
