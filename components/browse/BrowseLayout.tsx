@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { X, SlidersHorizontal, LayoutList, LayoutGrid } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
@@ -31,7 +31,20 @@ interface BrowseLayoutProps {
   title?: string;
   defaultSort?: ProductsParams["sort"];
   saleOnly?: boolean;
+  /** Only products marked featured in the admin. */
+  featuredOnly?: boolean;
   showDiscountPct?: boolean;
+}
+
+const VIEW_KEY = "fastweb_view";
+const noopSubscribe = () => () => {};
+
+function readSavedView(): "list" | "grid" {
+  try {
+    return localStorage.getItem(VIEW_KEY) === "grid" ? "grid" : "list";
+  } catch {
+    return "list";
+  }
 }
 
 export function BrowseLayout({
@@ -43,6 +56,7 @@ export function BrowseLayout({
   title,
   defaultSort = "name_asc",
   saleOnly = false,
+  featuredOnly = false,
   showDiscountPct = false,
 }: BrowseLayoutProps) {
   const router = useRouter();
@@ -65,15 +79,10 @@ export function BrowseLayout({
   const [brandSearch, setBrandSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-const [view, setView] = useState<"list" | "grid">("list");
-
-useEffect(() => {
-  const savedView = localStorage.getItem("fastweb_view");
-
-  if (savedView === "list" || savedView === "grid") {
-    setView(savedView);
-  }
-}, []);
+  // The remembered list/grid choice is read after hydration (the server always renders "list"); a click overrides it.
+  const savedView = useSyncExternalStore(noopSubscribe, readSavedView, () => "list" as const);
+  const [chosenView, setChosenView] = useState<"list" | "grid" | null>(null);
+  const view = chosenView ?? savedView;
 
   const { addItem } = useCart();
 
@@ -92,9 +101,13 @@ useEffect(() => {
   }, [filtersOpen]);
 
   function switchView(v: "list" | "grid") {
-    setView(v);
+    setChosenView(v);
     setQtyMap({});
-    localStorage.setItem("fastweb_view", v);
+    try {
+      localStorage.setItem(VIEW_KEY, v);
+    } catch {
+      // Storage blocked (private mode): the choice just is not remembered.
+    }
   }
 
   // ── URL helpers ────────────────────────────────────────────────────────────
@@ -165,6 +178,7 @@ useEffect(() => {
     per_page: 48,
   };
   if (brandId) params.brand_id = brandId;
+  if (featuredOnly) params.featured = true;
 
   const { data, isLoading } = useProducts(params);
 

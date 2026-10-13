@@ -51,6 +51,8 @@ export interface ProductsParams {
   per_page?: number;
   page?: number;
   ids?: number[];
+  /** Only products marked featured in the admin (the "Feature Product" page). */
+  featured?: boolean;
 }
 
 function toNum(v: unknown): number | null {
@@ -79,6 +81,7 @@ export function useProducts(params: ProductsParams = {}, options: { enabled?: bo
             ...params,
             ids: params.ids?.length ? params.ids.join(",") : undefined,
             in_stock: params.in_stock ? true : undefined,
+            featured: params.featured ? 1 : undefined,
           },
         })
         .then((r) => ({ ...r.data, data: r.data.data.map(normalizeProduct) })),

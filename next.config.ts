@@ -41,6 +41,10 @@ const nextConfig: NextConfig = {
   // so this never serves an outdated picture; it only stops re-fetching the slow source hosts.
   minimumCacheTTL: 2592000,
 },
+  // Old WordPress address of the featured page, so existing links and bookmarks keep working.
+  async redirects() {
+    return [{ source: "/feature-product", destination: "/featured", permanent: true }];
+  },
   webpack(config) {
     // The modern PDF.js bundle contains its own Webpack runtime and crashes
     // when Next's Webpack compiler processes it. Use PDF.js's compatibility
