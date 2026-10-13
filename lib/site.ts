@@ -15,11 +15,14 @@ export const SITE_URL = (
   (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000")
 ).replace(/\/$/, "");
 
-export async function fetchApi<T>(path: string, revalidate = 300): Promise<T | null> {
+/** Cache tag of the homepage payload; the Gateway purges it through /api/revalidate when the homepage changes. */
+export const HOMEPAGE_TAG = "homepage";
+
+export async function fetchApi<T>(path: string, revalidate = 300, tags?: string[]): Promise<T | null> {
   try {
     const response = await fetch(`${API_BASE}${path}`, {
       headers: { Accept: "application/json" },
-      next: { revalidate },
+      next: { revalidate, ...(tags ? { tags } : {}) },
     });
     if (!response.ok) return null;
     return (await response.json()) as T;
@@ -59,7 +62,7 @@ export type PublicSiteSettings = SiteSettings;
  */
 export async function getHomepagePayload(): Promise<HomepagePayload | null> {
   const client = process.env.NEXT_PUBLIC_HOMEPAGE_CLIENT || "unity-web";
-  return fetchApi<HomepagePayload>(`/homepage?client=${encodeURIComponent(client)}`);
+  return fetchApi<HomepagePayload>(`/homepage?client=${encodeURIComponent(client)}`, 300, [HOMEPAGE_TAG]);
 }
 
 export async function getSiteSettings(): Promise<PublicSiteSettings> {
