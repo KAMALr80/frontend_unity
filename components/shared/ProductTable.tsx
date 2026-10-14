@@ -98,7 +98,10 @@ export function ProductTable({
     return <span className="font-mono font-semibold text-destructive">{pct}%</span>;
   }
 
-  function renderRow(p: Product, isChild = false): ReactNode {
+  /** The first rows are on screen at once: load their thumbnails right away instead of lazily. */
+  const EAGER_ROWS = 10;
+
+  function renderRow(p: Product, isChild = false, index = 0): ReactNode {
     const isGrouped = p.type === "grouped" && p.children && p.children.length > 0;
     const isOpen = expanded.has(p.id);
 
@@ -126,7 +129,7 @@ export function ProductTable({
           <td className={`${TD} w-14 hidden sm:table-cell`}>
             <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
               {p.image ? (
-                <ProductImage src={p.image} variants={p.image_variants} alt={p.name} sizes="36px" className="object-cover" />
+                <ProductImage src={p.image} variants={p.image_variants} alt={p.name} sizes="36px" priority={!isChild && index < EAGER_ROWS} className="object-cover" />
               ) : (
                 <ImagePlaceholder />
               )}
@@ -240,7 +243,7 @@ export function ProductTable({
               </td>
             </tr>
           ) : (
-            products.map((p) => renderRow(p))
+            products.map((p, index) => renderRow(p, false, index))
           )}
         </tbody>
       </table>

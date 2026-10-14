@@ -102,7 +102,7 @@ export function ProductGrid({
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 pt-3">
-      {products.map((p) => {
+      {products.map((p, index) => {
         const isGrouped = p.type === "grouped" && p.children && p.children.length > 0;
 
         return (
@@ -118,6 +118,7 @@ export function ProductGrid({
                   variants={p.image_variants}
                   alt={p.name}
                   sizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, (max-width: 1279px) 25vw, 20vw"
+                  priority={index < 4}
                   className="object-contain"
                 />
               ) : (
