@@ -37,18 +37,21 @@ export function UserAccountMenu() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex min-h-11 min-w-10 cursor-pointer items-center justify-center gap-1 border-none bg-transparent px-1.5 py-2.5 sm:min-w-11 sm:px-2 text-[11px] font-medium uppercase tracking-[0.04em] text-white/85 transition-colors hover:text-gold lg:min-h-0"
+        className="group flex min-h-11 min-w-10 cursor-pointer items-center justify-center gap-2.5 border-none bg-transparent px-1.5 text-left text-white transition-colors sm:min-w-11 lg:px-2"
         aria-haspopup="true"
         aria-expanded={open}
       >
-        <UserIcon size={22} strokeWidth={1.6} className="sm:hidden" aria-hidden="true" />
-        <span className="sr-only sm:not-sr-only sm:max-w-[160px] sm:truncate">{user?.name}</span>
+        <UserIcon size={22} strokeWidth={1.6} className="shrink-0 text-gold" aria-hidden="true" />
+        <span className="sr-only lg:not-sr-only lg:flex lg:flex-col lg:leading-tight">
+          <span className="max-w-[140px] truncate text-[11px] text-white/60">Hello, {user?.name?.split(" ")[0]}</span>
+          <span className="text-[13px] font-semibold transition-colors group-hover:text-gold">My account</span>
+        </span>
         <svg
           width="8"
           height="5"
           viewBox="0 0 8 5"
           fill="none"
-          className={`hidden transition-transform duration-150 sm:block ${open ? "rotate-180" : ""}`}
+          className={`hidden text-white/60 transition-transform duration-150 lg:block ${open ? "rotate-180" : ""}`}
         >
           <path d="M1 1l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>

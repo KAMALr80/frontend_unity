@@ -54,7 +54,13 @@ function GuestAccountMenu() {
 
   return (
     <div ref={ref} className="relative">
-      <button type="button" onClick={() => setOpen((value) => !value)} aria-haspopup="true" aria-expanded={open} aria-label="Account" className="grid h-11 w-11 place-items-center text-gold transition-colors hover:text-white"><UserRound size={22} strokeWidth={1.6} /></button>
+      <button type="button" onClick={() => setOpen((value) => !value)} aria-haspopup="true" aria-expanded={open} aria-label="Account" className="group flex min-h-11 min-w-10 items-center justify-center gap-2.5 px-1.5 text-left text-white lg:px-2">
+        <UserRound size={22} strokeWidth={1.6} className="shrink-0 text-gold" />
+        <span className="hidden flex-col leading-tight lg:flex">
+          <span className="text-[11px] text-white/60">Hello, guest</span>
+          <span className="text-[13px] font-semibold transition-colors group-hover:text-gold">{site.login_text || "Sign in"} / {site.register_text || "Register"}</span>
+        </span>
+      </button>
       {open && (
         <div className="absolute right-0 top-full z-50 mt-2 w-60 border border-border bg-card p-4 text-card-foreground shadow-lg">
           <p className="text-sm font-medium">Returning Customer?</p>
@@ -105,17 +111,17 @@ export function UtilityBar() {
                 {wishlistCount > 0 && <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-white">{wishlistCount}</span>}
               </Link>
               <UserAccountMenu />
-              <Link href="/cart" aria-label={`${itemCount} items in cart`} className="flex items-center gap-2 text-white no-underline transition-colors hover:text-gold">
-                <span className="relative grid h-11 w-10 place-items-center sm:w-11">
-                  <ShoppingBag size={22} strokeWidth={1.6} />
-                  <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-white">{itemCount}</span>
-                </span>
-                <span className="hidden text-sm font-medium sm:inline">${subtotal.toFixed(2)}</span>
-              </Link>
             </>
           ) : (
             <GuestAccountMenu />
           )}
+          <Link href="/cart" aria-label={`${itemCount} items in cart`} className="flex items-center gap-2 text-white no-underline transition-colors hover:text-gold">
+            <span className="relative grid h-11 w-10 place-items-center sm:w-11">
+              <ShoppingBag size={22} strokeWidth={1.6} />
+              <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-white">{itemCount}</span>
+            </span>
+            {isAuthenticated && <span className="hidden text-sm font-medium sm:inline">${subtotal.toFixed(2)}</span>}
+          </Link>
         </div>
       </div>
       <div className="px-3 pb-3 sm:px-6 lg:hidden"><SearchForm idSuffix="mobile" className="w-full" /></div>

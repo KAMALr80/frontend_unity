@@ -10,7 +10,8 @@ import { useSiteConfig } from "@/context/SiteConfigContext";
 /** Menus with more items than this open as a wide five-column panel instead of a scrolling list. */
 const WIDE_MENU_ITEMS = 24;
 
-const NAV_LINK = "flex h-full items-center whitespace-nowrap px-3 text-sm font-bold text-white no-underline transition-colors hover:text-gold";
+// Slightly tighter below 1536px so the full menu fits on a 1280px laptop screen without spilling over.
+const NAV_LINK = "flex h-full items-center whitespace-nowrap px-2.5 text-[13px] font-bold text-white no-underline transition-colors hover:text-gold 2xl:px-3 2xl:text-sm";
 
 function matches(category: Category, keywords: readonly string[]) {
   const value = `${category.name} ${category.slug}`.toLowerCase();
@@ -98,10 +99,10 @@ export function NavBar() {
 
   return (
     <nav aria-label="Main" className="sticky top-0 z-40 border-t border-white/10 bg-black text-white shadow-sm">
-      <div className="mx-auto hidden h-14 max-w-[1320px] items-stretch gap-1 px-6 xl:flex">
+      <div className="mx-auto hidden h-14 max-w-[1320px] items-stretch px-6 xl:flex">
         {/* All categories: the CMS list when set, otherwise the top-level categories. */}
         <div className="relative flex items-center" onMouseEnter={() => setOpenMenu(ALL)} onMouseLeave={closeMenus}>
-          <button type="button" onClick={() => setOpenMenu((value) => (value === ALL ? null : ALL))} onFocus={() => setOpenMenu(ALL)} aria-expanded={openMenu === ALL} className="flex h-10 min-w-[240px] items-center justify-between gap-3 bg-gold px-6 text-sm font-bold text-white transition hover:brightness-110">
+          <button type="button" onClick={() => setOpenMenu((value) => (value === ALL ? null : ALL))} onFocus={() => setOpenMenu(ALL)} aria-expanded={openMenu === ALL} className="mr-2 flex h-10 min-w-[210px] items-center justify-between gap-3 bg-gold px-5 text-[13px] 2xl:min-w-[240px] 2xl:px-6 2xl:text-sm font-bold text-white transition hover:brightness-110">
             <span className="inline-flex items-center gap-2"><LayoutGrid size={15} /> All Categories</span><ChevronDown size={14} className={`transition-transform ${openMenu === ALL ? "rotate-180" : ""}`} />
           </button>
           {openMenu === ALL && (

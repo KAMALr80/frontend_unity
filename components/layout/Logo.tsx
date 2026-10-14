@@ -21,7 +21,7 @@ export function Logo({ className = "h-11 sm:h-14", loading = "lazy" }: LogoProps
     <Link
       href="/"
       aria-label={`${site.site_name || "Website"} home`}
-      className={`flex shrink-0 items-center gap-2.5 no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:gap-3 ${className}`}
+      className={`flex shrink-0 items-center gap-2.5 no-underline outline-none focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-gold/60 sm:gap-3 ${className}`}
     >
       {site.logo_url && (
         <span className="relative block aspect-square h-full shrink-0">
