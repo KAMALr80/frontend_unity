@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
-import { imageVariant, type ImageVariants } from "@/lib/imageVariants";
-import { preloadFillImage } from "@/lib/preloadImage";
+import { type ImageVariants } from "@/lib/imageVariants";
+import { preloadProductImage } from "@/lib/preloadImage";
 import { apiSaysNotFound, excerpt, fetchApi } from "@/lib/site";
 
 interface PublicProduct {
@@ -60,8 +60,7 @@ export default async function ProductLayout({ children, params }: { children: Re
   const product = await fetchApi<PublicProduct>(`/products/${id}`);
   const images = product?.images ?? (product?.image ? [{ url: product.image, is_primary: true, variants: product.image_variants }] : []);
   const main = images.find((image) => image.is_primary) ?? images[0];
-  // Same source and sizes as the gallery's main <Image> (page.tsx), so the preload is the request it uses.
-  const mainSrc = main ? imageVariant(main.url, main.variants, 1024) : null;
-  if (mainSrc) preloadFillImage(mainSrc, "(max-width: 767px) 100vw, 50vw");
+  // Same candidates and sizes as the gallery's main <ProductImage> (page.tsx), so the preload is the request it uses.
+  if (main) preloadProductImage(main.url, main.variants, "(max-width: 767px) 100vw, 50vw");
   return children;
 }
