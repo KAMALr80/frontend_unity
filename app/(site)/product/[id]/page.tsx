@@ -2,6 +2,8 @@
 
 import { use, useState, Suspense } from "react";
 import { ProductImage } from "@/components/shared/ProductImage";
+import { ZoomImage } from "@/components/product/ZoomImage";
+import { ImageLightbox } from "@/components/product/ImageLightbox";
 import Link from "next/link";
 import { Heart, GitCompare, ChevronLeft, ChevronRight } from "lucide-react";
 import { useProduct } from "@/hooks/useProducts";
@@ -39,6 +41,7 @@ function ImagePlaceholder() {
 function ImageGallery({ images, name }: { images: { url: string; is_primary: boolean; variants?: ImageVariants | null }[]; name: string }) {
   const sorted = [...images].sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0));
   const [active, setActive] = useState(0);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   const prev = () => setActive((i) => (i - 1 + sorted.length) % sorted.length);
   const next = () => setActive((i) => (i + 1) % sorted.length);
@@ -55,23 +58,27 @@ function ImageGallery({ images, name }: { images: { url: string; is_primary: boo
     <div className="flex flex-col gap-3">
       {/* Main image */}
       <div className="group aspect-[4/3] relative overflow-hidden rounded-lg border border-border bg-muted shadow-sm">
-        <ProductImage
+        <ZoomImage
+          key={sorted[active].url}
           src={sorted[active].url}
           variants={sorted[active].variants}
           alt={name}
           sizes="(max-width: 767px) 100vw, 50vw"
-          className="object-contain"
-          priority
+          onOpen={() => setViewerOpen(true)}
         />
         {sorted.length > 1 && (
           <>
             <button
+              type="button"
+              aria-label="Previous image"
               onClick={prev}
               className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 lg:w-7 lg:h-7 rounded-md border border-border bg-card/90 text-foreground shadow-sm flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
             >
               <ChevronLeft size={14} />
             </button>
             <button
+              type="button"
+              aria-label="Next image"
               onClick={next}
               className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 lg:w-7 lg:h-7 rounded-md border border-border bg-card/90 text-foreground shadow-sm flex items-center justify-center lg:opacity-0 lg:group-hover:opacity-100 transition-opacity"
             >
@@ -80,6 +87,8 @@ function ImageGallery({ images, name }: { images: { url: string; is_primary: boo
           </>
         )}
       </div>
+
+      {viewerOpen && <ImageLightbox images={sorted} index={active} alt={name} onIndex={setActive} onClose={() => setViewerOpen(false)} />}
 
       {/* Thumbnails */}
       {sorted.length > 1 && (
