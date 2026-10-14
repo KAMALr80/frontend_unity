@@ -6,6 +6,7 @@ import { ArrowRight, ChevronDown, ChevronRight, LayoutGrid, Menu, X } from "luci
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useCategories, type Category } from "@/hooks/useCategories";
 import { useSiteConfig } from "@/context/SiteConfigContext";
+import { useAuth } from "@/context/AuthContext";
 
 /** Menus with more items than this open as a wide five-column panel instead of a scrolling list. */
 const WIDE_MENU_ITEMS = 24;
@@ -91,8 +92,11 @@ export function NavBar() {
       }),
     [categories, site.nav_groups]
   );
-  const links = site.nav_links ?? [];
-  const linksBefore = site.nav_links_before ?? [];
+  const { isAuthenticated } = useAuth();
+  // Sign-up links (e.g. "Registration") mean nothing to a signed-in buyer.
+  const forVisitor = (link: { url: string }) => !(isAuthenticated && /^\/register(\/|\?|$)/.test(link.url));
+  const links = (site.nav_links ?? []).filter(forVisitor);
+  const linksBefore = (site.nav_links_before ?? []).filter(forVisitor);
   const allCategoryLinks = site.all_categories ?? [];
   const activeMobileGroup = groups.find((group) => group.label === mobileSection);
   const closeMenus = () => setOpenMenu(null);
