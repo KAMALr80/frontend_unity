@@ -15,7 +15,9 @@ import { useCategories, type Category } from "@/hooks/useCategories";
 import type { BreadcrumbItem } from "@/components/shared/Breadcrumb";
 
 const SORT_OPTIONS = [
-  { value: "name_asc", label: "Bestselling" },
+  // "name_asc" used to be labelled "Bestselling" although it sorts A–Z; best selling is its own rank-based sort now.
+  { value: "best_selling", label: "Best selling" },
+  { value: "name_asc", label: "Name A–Z" },
   { value: "newest", label: "Newest" },
   { value: "price_asc", label: "Price ↑" },
   { value: "price_desc", label: "Price ↓" },
@@ -33,6 +35,8 @@ interface BrowseLayoutProps {
   saleOnly?: boolean;
   /** Only products marked featured in the admin. */
   featuredOnly?: boolean;
+  /** Only products ranked as best sellers in the admin. */
+  bestSellerOnly?: boolean;
   showDiscountPct?: boolean;
 }
 
@@ -57,6 +61,7 @@ export function BrowseLayout({
   defaultSort = "name_asc",
   saleOnly = false,
   featuredOnly = false,
+  bestSellerOnly = false,
   showDiscountPct = false,
 }: BrowseLayoutProps) {
   const router = useRouter();
@@ -179,6 +184,7 @@ export function BrowseLayout({
   };
   if (brandId) params.brand_id = brandId;
   if (featuredOnly) params.featured = true;
+  if (bestSellerOnly) params.best_seller = true;
 
   const { data, isLoading } = useProducts(params);
 

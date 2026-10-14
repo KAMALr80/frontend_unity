@@ -47,12 +47,14 @@ export interface ProductsParams {
   brand_id?: number | string;
   in_stock?: boolean;
   search?: string;
-  sort?: "name_asc" | "price_asc" | "price_desc" | "newest";
+  sort?: "name_asc" | "price_asc" | "price_desc" | "newest" | "best_selling";
   per_page?: number;
   page?: number;
   ids?: number[];
   /** Only products marked featured in the admin (the "Feature Product" page). */
   featured?: boolean;
+  /** Only products ranked as best sellers in the admin (the "Best Sellers" page). */
+  best_seller?: boolean;
 }
 
 function toNum(v: unknown): number | null {
@@ -82,6 +84,7 @@ export function useProducts(params: ProductsParams = {}, options: { enabled?: bo
             ids: params.ids?.length ? params.ids.join(",") : undefined,
             in_stock: params.in_stock ? true : undefined,
             featured: params.featured ? 1 : undefined,
+            best_seller: params.best_seller ? 1 : undefined,
           },
         })
         .then((r) => ({ ...r.data, data: r.data.data.map(normalizeProduct) })),
