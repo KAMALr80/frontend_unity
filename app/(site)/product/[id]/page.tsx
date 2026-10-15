@@ -489,10 +489,13 @@ function ProductDetail({ id }: { id: string }) {
             {product.name}
           </h1>
 
-          {/* SKU */}
-          <div className="text-[10.5px] font-medium tracking-[0.08em] text-muted-foreground uppercase mt-2">
-            SKU · {product.sku}
-          </div>
+          {/* SKU and barcodes */}
+          {(product.sku || (product.barcodes?.length ?? 0) > 0) && (
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10.5px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+              {product.sku && <span>SKU · {product.sku}</span>}
+              {(product.barcodes?.length ?? 0) > 0 && <span>Barcode · {product.barcodes!.join(", ")}</span>}
+            </div>
+          )}
 
           {/* Sale badge */}
           {product.on_sale && (

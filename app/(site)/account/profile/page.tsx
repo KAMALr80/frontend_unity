@@ -100,6 +100,11 @@ function ProfileForm({ user }: { user: User }) {
           </div>
 
           <div>
+            {user.state && (
+              <p className="mb-4 text-[12px] text-muted-foreground">
+                State on your account: <span className="font-medium text-foreground">{user.state}</span>. Tax is worked out for this state; contact us to change it.
+              </p>
+            )}
             <label htmlFor="profile-address" className={LABEL}>Address</label>
             <textarea id="profile-address"
               value={address}

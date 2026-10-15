@@ -25,6 +25,8 @@ export interface OrderLine {
   quantity: number;
   unit_price: number;
   unit_tax: number;
+  /** The line's state tax from the ERP (synced order details); 0 when none. */
+  line_tax?: number;
   total: number;
 }
 
@@ -64,6 +66,7 @@ function parseOrder(raw: Record<string, unknown>): Order {
     ...(line as object),
     unit_price: n(line.unit_price),
     unit_tax: n(line.unit_tax),
+    line_tax: line.line_tax != null ? n(line.line_tax) : undefined,
     total: n(line.total),
   })) as OrderLine[] | undefined;
 

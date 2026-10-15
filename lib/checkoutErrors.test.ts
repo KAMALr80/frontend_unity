@@ -4,6 +4,7 @@ import {
   GENERIC_ORDER_ERROR,
   NOT_APPROVED_MESSAGE,
   PRODUCT_UNAVAILABLE_MESSAGE,
+  STATE_REQUIRED_MESSAGE,
   missingBillingPhone,
   orderErrorMessage,
 } from "./checkoutErrors";
@@ -49,5 +50,16 @@ describe("orderErrorMessage", () => {
     expect(orderErrorMessage({ status: 403 })).toBe(NOT_APPROVED_MESSAGE);
     expect(orderErrorMessage({ status: 500 })).toBe(GENERIC_ORDER_ERROR);
     expect(orderErrorMessage(undefined)).toBe(GENERIC_ORDER_ERROR);
+  });
+});
+
+describe("orderErrorMessage: no state", () => {
+  it("shows the server message when the order has no state", () => {
+    const message = "Please add your state to your address. Tax depends on it, so an order needs one.";
+    expect(orderErrorMessage({ status: 422, data: { message, errors: { billing_state: [message] } } })).toBe(message);
+  });
+
+  it("falls back to its own message when the server sent none", () => {
+    expect(orderErrorMessage({ status: 422, data: { errors: { billing_state: ["required"] } } })).toBe(STATE_REQUIRED_MESSAGE);
   });
 });

@@ -128,6 +128,8 @@ function OrderDetail({ id }: { id: string }) {
 
   const TH = "px-4 py-2.5 text-[10px] tracking-[0.08em] uppercase text-muted-foreground border-b border-border text-left bg-muted";
   const TD = "px-4 py-3 text-[12.5px] text-foreground border-b border-border align-middle";
+  // Synced ERP orders carry each line's state tax; show the column only when some line has one.
+  const lineTaxes = (order.items ?? []).some((line) => (line.line_tax ?? 0) > 0);
 
   return (
     <div className="bg-background min-h-screen pb-28 md:pb-20">
@@ -201,6 +203,7 @@ function OrderDetail({ id }: { id: string }) {
                 <th className={TH}>Product</th>
                 <th className={`${TH} text-right w-16`}>Qty</th>
                 <th className={`${TH} text-right w-24`}>Unit price</th>
+                {lineTaxes && <th className={`${TH} text-right w-20`}>Tax</th>}
                 <th className={`${TH} text-right w-24`}>Total</th>
               </tr>
             </thead>
@@ -213,6 +216,7 @@ function OrderDetail({ id }: { id: string }) {
                   </td>
                   <td className={`${TD} text-right `}>{line.quantity}</td>
                   <td className={`${TD} text-right `}>${line.unit_price.toFixed(2)}</td>
+                  {lineTaxes && <td className={`${TD} text-right text-muted-foreground`}>${(line.line_tax ?? 0).toFixed(2)}</td>}
                   <td className={`${TD} text-right font-semibold`}>
                     ${line.total.toFixed(2)}
                   </td>

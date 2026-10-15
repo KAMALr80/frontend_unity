@@ -6,6 +6,8 @@ export interface Product {
   id: number;
   name: string;
   sku: string;
+  /** Other codes the product is sold under (ERP sku_1/sku_2/barcodes); search and ?barcode= match them. */
+  barcodes?: string[];
   /** Nested brand object as returned by the API */
   brand?: { id: number; name: string; slug: string } | null;
   /** Nested category object as returned by the API */

@@ -18,6 +18,8 @@ export interface User {
   email: string;
   phone?: string | null;
   address?: string | null;
+  /** The customer's state in the ERP (its state taxes go by it); null when the ERP has none. */
+  state?: string | null;
   approval_status: "pending" | "approved" | "rejected";
   erp_contact_id?: number | null;
   orders_count?: number;

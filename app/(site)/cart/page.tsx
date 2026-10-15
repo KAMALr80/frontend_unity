@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ProductImage } from "@/components/shared/ProductImage";
 import { X, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useCartTax } from "@/hooks/useCartTax";
 import { useAuth } from "@/context/AuthContext";
 import { useRequireAuth } from "@/components/auth/withAuth";
 
@@ -109,6 +110,8 @@ export default function CartPage() {
   const { isLoading } = useRequireAuth();
   const { isApproved } = useAuth();
   const { items, itemCount, subtotal, updateQty, removeItem, isLoaded, notices, dismissNotices } = useCart();
+  // State tax for the current lines; re-quoted after every quantity change.
+  const { data: tax, isFetching: taxLoading } = useCartTax(items);
   const unavailableCount = items.filter((i) => i.in_stock === false).length;
 
   // Only the first load shows a loader; later background syncs update the cart in place (no flicker).
@@ -333,14 +336,29 @@ export default function CartPage() {
                 <span className="text-muted-foreground">Shipping</span>
                 <span className="text-muted-foreground">TBD</span>
               </div>
-              <div className="flex justify-between text-[12.5px]">
-                <span className="text-muted-foreground">Tax</span>
-                <span className="text-muted-foreground">Net of tax</span>
+              <div className="flex justify-between gap-3 text-[12.5px]">
+                <span className="text-muted-foreground">Tax{tax?.available && !tax.state_required && tax.state ? ` (${tax.state})` : ""}</span>
+                <span className={tax?.available && tax.total_tax != null && !tax.state_required ? "font-semibold text-foreground" : "text-muted-foreground"}>
+                  {!isApproved
+                    ? "—"
+                    : tax?.state_required
+                      ? "At checkout"
+                      : tax && !tax.available
+                        ? "Added on processing"
+                        : tax?.total_tax != null
+                          ? `$${tax.total_tax.toFixed(2)}`
+                          : taxLoading
+                            ? "Calculating…"
+                            : "—"}
+                </span>
               </div>
               <div className="border-t border-border pt-3 flex justify-between text-[13.5px]">
                 <span className="text-foreground font-semibold">Total</span>
-                <span className="text-foreground font-semibold">${subtotal.toFixed(2)}</span>
+                <span className="text-foreground font-semibold">${(tax?.available && !tax.state_required && tax.total != null ? tax.total : subtotal).toFixed(2)}</span>
               </div>
+              {isApproved && tax?.state_required && (
+                <p className="text-[11px] leading-snug text-muted-foreground">Tax depends on your state. It is worked out at checkout once your address has a state.</p>
+              )}
             </div>
 
             <div className="px-5 pb-5">

@@ -8,6 +8,8 @@ export const BILLING_PHONE_MESSAGE =
   "Your billing address needs a phone number (up to 20 characters). Edit the address to add one, then place the order.";
 export const NOT_APPROVED_MESSAGE = "Your account is not approved for ordering yet.";
 export const GENERIC_ORDER_ERROR = "Failed to place order. Please try again.";
+export const STATE_REQUIRED_MESSAGE =
+  "Your address needs a state: tax depends on it, so an order needs one. Edit the billing or shipping address to add the state.";
 
 interface OrderErrorResponse {
   status?: number;
@@ -27,6 +29,7 @@ export function orderErrorMessage(response: OrderErrorResponse | undefined): str
   const fields = errors ? Object.keys(errors) : [];
   if (fields.length === 0 || fields.some((field) => field.startsWith("items"))) return PRODUCT_UNAVAILABLE_MESSAGE;
   if (fields.includes("billing_phone")) return BILLING_PHONE_MESSAGE;
+  if (fields.includes("billing_state") || fields.includes("shipping_state")) return response.data?.message || STATE_REQUIRED_MESSAGE;
 
   const details = fields
     .slice(0, 2)

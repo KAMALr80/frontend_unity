@@ -9,7 +9,8 @@ import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useAddresses, useCreateAddress, useUpdateAddress, type Address, type NewAddress } from "@/hooks/useAddresses";
 import api from "@/lib/axios";
-import { BILLING_PHONE_MESSAGE, missingBillingPhone, orderErrorMessage } from "@/lib/checkoutErrors";
+import { BILLING_PHONE_MESSAGE, STATE_REQUIRED_MESSAGE, missingBillingPhone, orderErrorMessage } from "@/lib/checkoutErrors";
+import { useCartTax } from "@/hooks/useCartTax";
 
 function newIdempotencyKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") return crypto.randomUUID();
@@ -309,7 +310,7 @@ function AddressModal({
             <AddressField label="Address line 2" value={form.address_2 ?? ""} onChange={(v) => set("address_2", v)} />
             <div className="flex flex-col gap-3 sm:flex-row">
               <AddressField label="City" value={form.city} onChange={(v) => set("city", v)} required half />
-              <AddressField label="State / Province" value={form.state ?? ""} onChange={(v) => set("state", v)} half />
+              <AddressField label="State" value={form.state ?? ""} onChange={(v) => set("state", v)} required half />
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <AddressField label="Postcode" value={form.postcode} onChange={(v) => set("postcode", v)} required half />
@@ -344,6 +345,24 @@ function AddressModal({
   );
 }
 
+// ─── Tax row ─────────────────────────────────────────────────────────────────
+
+/** State tax from POST /api/cart/tax: the amount with the state it was worked out for, or why there is none yet. */
+function TaxRow({ tax, loading, hasAddress }: { tax: ReturnType<typeof useCartTax>["data"]; loading: boolean; hasAddress: boolean }) {
+  let value: string;
+  if (tax?.state_required) value = hasAddress ? "Needs a state" : "Select an address";
+  else if (tax && !tax.available) value = "Added on processing";
+  else if (tax?.total_tax != null) value = `$${tax.total_tax.toFixed(2)}`;
+  else value = loading ? "Calculating…" : "—";
+
+  return (
+    <div className="flex justify-between gap-3 text-[12.5px]">
+      <span className="text-muted-foreground">Tax{tax?.available && tax.state ? ` (${tax.state})` : ""}</span>
+      <span className={tax?.total_tax != null && tax.available ? "font-semibold text-foreground" : "text-muted-foreground"}>{value}</span>
+    </div>
+  );
+}
+
 // ─── Checkout Page ────────────────────────────────────────────────────────────
 
 interface ModalState {
@@ -366,6 +385,11 @@ export default function CheckoutPage() {
   const [modal, setModal] = useState<ModalState | null>(null);
   // One key per visit to checkout: a retried or repeated submit returns the order already placed instead of a second one.
   const [idempotencyKey] = useState(newIdempotencyKey);
+  // Tax goes by the account's ERP state, else the state of the address ordered to (shipping, else billing).
+  const { data: tax, isFetching: taxLoading } = useCartTax(items, { addressId: shippingAddr?.id ?? billingAddr?.id ?? null });
+  const hasState = Boolean(user?.state?.trim() || billingAddr?.state?.trim() || shippingAddr?.state?.trim());
+  // No state anywhere: the order API would refuse it (422), so the button stays off until one is added.
+  const stateMissing = Boolean(billingAddr && shippingAddr) && (!hasState || tax?.state_required === true);
 
   function openAddModal(onSave: (addr: Address) => void) {
     setModal({ onSave });
@@ -405,6 +429,10 @@ export default function CheckoutPage() {
     }
     if (missingBillingPhone(billingAddr)) {
       setError(BILLING_PHONE_MESSAGE);
+      return;
+    }
+    if (stateMissing) {
+      setError(STATE_REQUIRED_MESSAGE);
       return;
     }
 
@@ -575,20 +603,27 @@ export default function CheckoutPage() {
               <span className="text-muted-foreground">Shipping</span>
               <span className="text-muted-foreground">TBD</span>
             </div>
+            <TaxRow tax={tax} loading={taxLoading} hasAddress={Boolean(billingAddr && shippingAddr)} />
             <div className="border-t border-border pt-3 flex justify-between text-[13.5px]">
               <span className="text-foreground font-semibold">Total</span>
-              <span className="text-foreground font-semibold">${subtotal.toFixed(2)}</span>
+              <span className="text-foreground font-semibold">${(tax?.available && tax.total != null ? tax.total : subtotal).toFixed(2)}</span>
             </div>
+            {tax && !tax.available && <p className="text-[11px] leading-snug text-muted-foreground">{tax.message || "Tax could not be calculated right now; it is added when your order is processed."}</p>}
           </div>
 
           <div className="px-5 pb-5">
             {error && (
               <p className="mb-3 text-[11px] text-destructive leading-snug">{error}</p>
             )}
+            {!error && stateMissing && (
+              <p className="mb-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-[11.5px] leading-snug text-foreground">
+                {tax?.message || STATE_REQUIRED_MESSAGE}
+              </p>
+            )}
 
             <button
               onClick={handlePlaceOrder}
-              disabled={submitting || !billingAddr || !shippingAddr || items.length === 0}
+              disabled={submitting || !billingAddr || !shippingAddr || items.length === 0 || stateMissing}
               className="w-full rounded-md bg-primary px-5 py-3 text-[11px] font-medium tracking-[0.08em] uppercase text-primary-foreground shadow-xs hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {submitting ? "Placing order…" : "Place order →"}
