@@ -17,12 +17,18 @@ export function ProductRail({ section }: { section: HomepageSection }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [page, setPage] = useState(0);
   const [pages, setPages] = useState(1);
+  const [canPrev, setCanPrev] = useState(false);
+  const [canNext, setCanNext] = useState(false);
 
   const measure = useCallback(() => {
     const track = trackRef.current;
     if (!track || track.clientWidth === 0) return;
-    setPages(Math.max(1, Math.round(track.scrollWidth / track.clientWidth)));
-    setPage(Math.round(track.scrollLeft / track.clientWidth));
+    const total = Math.max(1, Math.ceil(track.scrollWidth / track.clientWidth - 0.01));
+    const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
+    setPages(total);
+    setPage(atEnd ? total - 1 : Math.min(total - 1, Math.round(track.scrollLeft / track.clientWidth)));
+    setCanPrev(track.scrollLeft > 2);
+    setCanNext(!atEnd);
   }, []);
 
   useEffect(() => {
@@ -38,6 +44,12 @@ export function ProductRail({ section }: { section: HomepageSection }) {
   const goTo = (target: number) => {
     const track = trackRef.current;
     if (track) track.scrollTo({ left: target * track.clientWidth, behavior: "smooth" });
+  };
+  // The arrows move one product at a time (the dots below still jump a whole page).
+  const step = (direction: 1 | -1) => {
+    const track = trackRef.current;
+    const card = track?.firstElementChild as HTMLElement | null;
+    if (track && card) track.scrollBy({ left: direction * card.offsetWidth, behavior: "smooth" });
   };
   const actionText = typeof section.settings.action_text === "string" ? section.settings.action_text : "";
   const actionUrl = typeof section.settings.action_url === "string" ? section.settings.action_url : "";
@@ -58,8 +70,8 @@ export function ProductRail({ section }: { section: HomepageSection }) {
         </div>
         {pages > 1 && (
           <>
-            <button type="button" onClick={() => goTo(Math.max(0, page - 1))} aria-label={`Previous ${section.title} products`} className="absolute -left-1 top-1/2 z-10 grid h-9 w-7 -translate-y-1/2 place-items-center bg-white/90 text-foreground shadow transition hover:bg-gold sm:-left-2"><ChevronLeft size={18} /></button>
-            <button type="button" onClick={() => goTo(Math.min(pages - 1, page + 1))} aria-label={`Next ${section.title} products`} className="absolute -right-1 top-1/2 z-10 grid h-9 w-7 -translate-y-1/2 place-items-center bg-white/90 text-foreground shadow transition hover:bg-gold sm:-right-2"><ChevronRight size={18} /></button>
+            <button type="button" onClick={() => step(-1)} disabled={!canPrev} aria-label={`Previous ${section.title} product`} className="absolute -left-1 top-1/2 z-10 grid h-9 w-7 -translate-y-1/2 place-items-center bg-white/90 text-foreground shadow transition hover:bg-gold disabled:cursor-default disabled:opacity-40 disabled:hover:bg-white/90 sm:-left-2"><ChevronLeft size={18} /></button>
+            <button type="button" onClick={() => step(1)} disabled={!canNext} aria-label={`Next ${section.title} product`} className="absolute -right-1 top-1/2 z-10 grid h-9 w-7 -translate-y-1/2 place-items-center bg-white/90 text-foreground shadow transition hover:bg-gold disabled:cursor-default disabled:opacity-40 disabled:hover:bg-white/90 sm:-right-2"><ChevronRight size={18} /></button>
           </>
         )}
       </div>
