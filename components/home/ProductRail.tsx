@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import type { HomepageSection } from "@/context/SiteConfigContext";
 import { HomeProductCard } from "./HomeProductCard";
 import { useHomeProducts } from "./HomeProducts";
@@ -56,9 +56,15 @@ export function ProductRail({ section }: { section: HomepageSection }) {
 
   return (
     <section className="mx-auto w-full max-w-[1600px] px-2 pt-6 sm:px-4 lg:px-6" aria-label={section.title}>
-      <header className="mb-2 flex items-baseline justify-between gap-4 border-b border-border pb-2">
-        <h2 className="text-base font-medium text-foreground sm:text-lg">{section.title}</h2>
-        {actionText && actionUrl && <Link href={actionUrl} className="text-xs text-muted-foreground no-underline transition-colors hover:text-primary">{actionText} ›</Link>}
+      {/* Shop-style section heading: bold title with a gold underline sitting on the full-width rule. */}
+      <header className="mb-3 flex items-end justify-between gap-4 border-b border-border">
+        <h2 className="-mb-px border-b-2 border-gold pb-2.5 text-[17px] font-bold uppercase leading-none tracking-[0.06em] text-foreground sm:text-xl">{section.title}</h2>
+        {actionText && actionUrl && (
+          <Link href={actionUrl} className="group mb-2 inline-flex shrink-0 items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground no-underline transition-colors hover:text-primary">
+            {actionText}
+            <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+          </Link>
+        )}
       </header>
       <div className="relative">
         <div ref={trackRef} onScroll={measure} className="category-track flex snap-x snap-mandatory overflow-x-auto scroll-smooth">
