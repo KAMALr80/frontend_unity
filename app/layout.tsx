@@ -45,6 +45,8 @@ export async function generateMetadata(): Promise<Metadata> {
       images: site.logo_url ? [{ url: site.logo_url, alt: siteName }] : undefined,
     },
     twitter: { card: "summary", title: defaultTitle, description: site.seo_description },
+    // Google Search Console ownership of https://frontend-unity.vercel.app (renders <meta name="google-site-verification">).
+    verification: { google: "SywWMu5vMaH9aTs4yk_gRGgFn4yTuirfGcBHRgoOAsg" },
   };
 }
 
