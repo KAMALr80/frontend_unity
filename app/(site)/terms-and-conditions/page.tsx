@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { StaticContentPage } from "@/components/shared/StaticContentPage";
 import { getSiteSettings } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Terms and Conditions", alternates: { canonical: "/terms-and-conditions" } };
+export const metadata: Metadata = { title: "Terms and Conditions", description: "The terms that apply to wholesale accounts, orders and use of this website.", alternates: { canonical: "/terms-and-conditions" } };
 
 export default async function TermsPage() {
   const { email } = await getSiteSettings();

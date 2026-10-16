@@ -96,11 +96,17 @@ export function useProducts(params: ProductsParams = {}, options: { enabled?: bo
   });
 }
 
-export function useProduct(id: number | string) {
+/**
+ * One product. `initial` is the server-rendered (guest) copy, so the page HTML already holds the product for
+ * search engines; it counts as stale at once, so a signed-in buyer's browser re-reads it with their prices.
+ */
+export function useProduct(id: number | string, initial?: Product | null) {
   return useQuery<Product>({
     queryKey: ["product", id],
     queryFn: () =>
       api.get<Product>(`/products/${id}`).then((r) => normalizeProduct(r.data)),
     enabled: !!id,
+    initialData: initial ? normalizeProduct(initial) : undefined,
+    initialDataUpdatedAt: 0,
   });
 }

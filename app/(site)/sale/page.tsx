@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import { BrowseLayout } from "@/components/browse/BrowseLayout";
+import { PageHeader } from "@/components/shared/PageHeader";
 
 function SaleInner() {
   return (
@@ -28,7 +29,7 @@ function SaleInner() {
 
 export default function SalePage() {
   return (
-    <Suspense>
+    <Suspense fallback={<PageHeader crumbs={[{ label: "Sale" }]} title="Sale & clearance" />}>
       <SaleInner />
     </Suspense>
   );

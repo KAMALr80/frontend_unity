@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const brand = /^\d+$/.test(id) ? await fetchApi<PublicBrand>(`/brands/${id}`) : null;
   if (!brand) return { title: "Brand not found", robots: { index: false } };
 
-  const description = excerpt(brand.description) ?? `Shop ${brand.name} products wholesale.`;
+  const description = excerpt(brand.description) ?? `${brand.name} products at wholesale: browse the range and order in bulk with a wholesale account.`;
   return {
     title: brand.name,
     description,

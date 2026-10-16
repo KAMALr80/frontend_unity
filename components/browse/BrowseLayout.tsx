@@ -31,6 +31,8 @@ interface BrowseLayoutProps {
   subCategories?: Category[];
   crumbs?: BreadcrumbItem[];
   title?: string;
+  /** Heading level of the page header; 2 when the page has its own H1 above the listing. */
+  headingLevel?: 1 | 2;
   defaultSort?: ProductsParams["sort"];
   saleOnly?: boolean;
   /** Only products marked featured in the admin. */
@@ -58,6 +60,7 @@ export function BrowseLayout({
   subCategories = [],
   crumbs,
   title,
+  headingLevel,
   defaultSort = "name_asc",
   saleOnly = false,
   featuredOnly = false,
@@ -247,6 +250,7 @@ export function BrowseLayout({
         }
         title={pageTitle}
         meta={metaStr}
+        headingLevel={headingLevel}
       />
 
       {/* Sub-category pills — category pages only */}

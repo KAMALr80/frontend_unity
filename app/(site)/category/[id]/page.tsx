@@ -1,44 +1,24 @@
-"use client";
-
 import { Suspense } from "react";
-import { use } from "react";
-import { BrowseLayout } from "@/components/browse/BrowseLayout";
-import { useCategory } from "@/hooks/useCategories";
+import type { Category } from "@/hooks/useCategories";
+import { JsonLd, breadcrumbList } from "@/lib/jsonLd";
+import { fetchApi } from "@/lib/site";
+import { CategoryBrowse } from "./CategoryBrowse";
 
-interface Props {
-  params: Promise<{ id: string }>;
-}
-
-function CategoryBrowse({ id }: { id: string }) {
-  const { data: category, isLoading } = useCategory(id);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-40 font-mono text-[11px] text-brand-muted tracking-widest uppercase">
-        Loading…
-      </div>
-    );
-  }
+/**
+ * Server-renders the category listing (this route renders per request, so the header, H1 and filters are in the
+ * HTML) with its breadcrumb JSON-LD. The fetch is shared with the layout.
+ */
+export default async function CategoryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const category = await fetchApi<Category>(`/categories/${id}`);
+  const name = category?.name ?? "Category";
 
   return (
-    <BrowseLayout
-      categoryId={Number(id)}
-      categoryName={category?.name}
-      subCategories={category?.children ?? []}
-      crumbs={[
-        { label: "Shop", href: "/shop" },
-        { label: category?.name ?? "Category" },
-      ]}
-      title={category?.name ?? "Category"}
-    />
-  );
-}
-
-export default function CategoryPage({ params }: Props) {
-  const { id } = use(params);
-  return (
-    <Suspense>
-      <CategoryBrowse id={id} />
-    </Suspense>
+    <>
+      {category && <JsonLd data={breadcrumbList([{ name: "Shop", path: "/shop" }, { name }])} />}
+      <Suspense>
+        <CategoryBrowse id={id} initialCategory={category} />
+      </Suspense>
+    </>
   );
 }

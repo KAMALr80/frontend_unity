@@ -23,10 +23,12 @@ export function useCategories() {
   });
 }
 
-export function useCategory(id: number | string) {
+/** One category. `initial` is the server-rendered copy (in the page HTML for search engines). */
+export function useCategory(id: number | string, initial?: Category | null) {
   return useQuery<Category>({
     queryKey: ["category", id],
     queryFn: () => api.get<Category>(`/categories/${id}`).then((r) => r.data),
     enabled: !!id,
+    initialData: initial ?? undefined,
   });
 }

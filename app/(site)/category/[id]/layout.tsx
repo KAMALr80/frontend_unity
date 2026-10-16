@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!category) return { title: "Category not found", robots: { index: false } };
 
   const title = category.parent ? `${category.name} – ${category.parent.name}` : category.name;
-  const description = excerpt(category.description) ?? `Shop wholesale ${category.name}${category.parent ? ` in ${category.parent.name}` : ""}.`;
+  const description = excerpt(category.description) ?? `Wholesale ${category.name}${category.parent ? ` (${category.parent.name})` : ""}: browse the range by brand and stock, and order in bulk with a wholesale account.`;
   return {
     title,
     description,

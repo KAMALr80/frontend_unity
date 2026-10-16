@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import { BrowseLayout } from "@/components/browse/BrowseLayout";
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useCategories } from "@/hooks/useCategories";
 
 function NewArrivalsInner() {
@@ -19,7 +20,7 @@ function NewArrivalsInner() {
 
 export default function NewArrivalsPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<PageHeader crumbs={[{ label: "New Arrivals" }]} title="New arrivals · this month" />}>
       <NewArrivalsInner />
     </Suspense>
   );

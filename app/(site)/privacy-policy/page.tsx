@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { StaticContentPage } from "@/components/shared/StaticContentPage";
 import { getSiteSettings } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Privacy Policy", alternates: { canonical: "/privacy-policy" } };
+export const metadata: Metadata = { title: "Privacy Policy", description: "How we collect, use and protect the information of our wholesale customers and website visitors.", alternates: { canonical: "/privacy-policy" } };
 
 export default async function PrivacyPolicyPage() {
   const { email } = await getSiteSettings();

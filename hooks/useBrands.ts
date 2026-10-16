@@ -23,10 +23,12 @@ export function useBrands() {
   });
 }
 
-export function useBrand(id: number | string) {
+/** One brand. `initial` is the server-rendered copy (in the page HTML for search engines). */
+export function useBrand(id: number | string, initial?: Brand | null) {
   return useQuery<Brand>({
     queryKey: ["brand", id],
     queryFn: () => api.get<Brand>(`/brands/${id}`).then((r) => r.data),
     enabled: !!id,
+    initialData: initial ?? undefined,
   });
 }
