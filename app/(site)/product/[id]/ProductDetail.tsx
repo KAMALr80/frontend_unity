@@ -421,14 +421,14 @@ export function ProductDetail({ id, initialProduct }: { id: string; initialProdu
   if (isLoading) {
     return (
       <div className="min-h-screen animate-pulse bg-muted/30 pb-28 md:pb-20">
-        <div className="border-b border-border bg-card px-4 py-3.5 md:px-6 lg:px-8"><div className="h-6 w-2/3 rounded bg-muted" /></div>
+        <div className="border-b border-border bg-card px-4 py-3.5 md:px-6 lg:px-8"><div className="h-6 w-2/3 rounded-sm bg-muted" /></div>
         <div className="grid grid-cols-1 gap-0 border-b border-border bg-card md:grid-cols-2">
           <div className="border-b border-border bg-card p-4 md:border-b-0 md:border-r md:p-6 lg:p-8"><div className="aspect-[4/3] rounded-lg bg-muted" /></div>
           <div className="space-y-4 bg-card p-5 md:p-6 lg:p-8">
-            <div className="h-4 bg-muted rounded w-1/3" />
-            <div className="h-8 bg-muted rounded w-3/4" />
-            <div className="h-4 bg-muted rounded w-1/4" />
-            <div className="h-6 bg-muted rounded w-1/3" />
+            <div className="h-4 bg-muted rounded-sm w-1/3" />
+            <div className="h-8 bg-muted rounded-sm w-3/4" />
+            <div className="h-4 bg-muted rounded-sm w-1/4" />
+            <div className="h-6 bg-muted rounded-sm w-1/3" />
           </div>
         </div>
       </div>

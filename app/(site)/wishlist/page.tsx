@@ -51,8 +51,8 @@ function WishlistTable() {
           <div key={i} className="flex items-center gap-3 border-b border-border p-3 last:border-b-0 md:px-4">
             <div className="h-20 w-20 shrink-0 animate-pulse rounded-md bg-muted md:h-10 md:w-10" />
             <div className="flex-1 space-y-2">
-              <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
-              <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-3/4 animate-pulse rounded-sm bg-muted" />
+              <div className="h-3 w-1/3 animate-pulse rounded-sm bg-muted" />
             </div>
           </div>
         ))}

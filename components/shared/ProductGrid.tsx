@@ -21,10 +21,10 @@ function SkeletonCard() {
     <div className="flex flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm animate-pulse">
       <div className="aspect-square bg-muted" />
       <div className="p-3 space-y-2">
-        <div className="h-3 w-1/3 rounded bg-muted" />
-        <div className="h-4 w-4/5 rounded bg-muted" />
-        <div className="h-3 w-1/2 rounded bg-muted" />
-        <div className="mt-3 h-7 rounded bg-muted" />
+        <div className="h-3 w-1/3 rounded-sm bg-muted" />
+        <div className="h-4 w-4/5 rounded-sm bg-muted" />
+        <div className="h-3 w-1/2 rounded-sm bg-muted" />
+        <div className="mt-3 h-7 rounded-sm bg-muted" />
       </div>
     </div>
   );

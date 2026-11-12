@@ -579,7 +579,7 @@ export default function CatalogFlipbook({ file, title, onClose }: FlipbookProps)
                         : "hover:bg-white/10 opacity-75 hover:opacity-100"
                     }`}
                   >
-                    <div className="w-full aspect-[210/297] bg-white rounded overflow-hidden shadow flex items-center justify-center text-slate-400">
+                    <div className="w-full aspect-[210/297] bg-white rounded-sm overflow-hidden shadow flex items-center justify-center text-slate-400">
                       {pdfDocument ? (
                         <Page
                           pdf={pdfDocument}
@@ -642,7 +642,7 @@ export default function CatalogFlipbook({ file, title, onClose }: FlipbookProps)
                     }
                     setIsEditingPage(false);
                   }}
-                  className="w-10 text-center font-mono text-xs bg-slate-100 rounded border border-slate-300 py-0.5 outline-none focus:border-primary"
+                  className="w-10 text-center font-mono text-xs bg-slate-100 rounded-sm border border-slate-300 py-0.5 outline-none focus:border-primary"
                   autoFocus
                 />
               </form>
@@ -835,7 +835,7 @@ export default function CatalogFlipbook({ file, title, onClose }: FlipbookProps)
 
       {/* Floating toast notification */}
       {toastMessage && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-32px)] text-center bg-slate-900/95 text-white px-4 py-2 rounded-full text-xs font-semibold shadow-2xl border border-white/20 backdrop-blur-sm pointer-events-none">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 max-w-[calc(100vw-32px)] text-center bg-slate-900/95 text-white px-4 py-2 text-xs font-semibold shadow-2xl border border-white/20 backdrop-blur-sm pointer-events-none">
           {toastMessage}
         </div>
       )}
