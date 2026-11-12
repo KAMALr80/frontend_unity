@@ -40,7 +40,7 @@ function SkeletonRow({ showBrand }: { showBrand: boolean }) {
     <tr className="border-b border-border">
       {[...Array(showBrand ? 8 : 7)].map((_, i) => (
         <td key={i} className="px-2.5 py-2">
-          <div className="h-4 animate-pulse rounded bg-muted" />
+          <div className="h-4 animate-pulse rounded-sm bg-muted" />
         </td>
       ))}
     </tr>

@@ -18,7 +18,7 @@ export function PriceGate({ pricesVisible, children }: PriceGateProps) {
     // approved buyer whose priced copy is on its way, show a neutral placeholder instead of a sign-in prompt.
     if (isLoading || (isAuthenticated && isApproved)) {
       return (
-        <span className="inline-block h-4 w-14 animate-pulse rounded bg-muted align-middle" aria-label="Loading price" />
+        <span className="inline-block h-4 w-14 animate-pulse rounded-sm bg-muted align-middle" aria-label="Loading price" />
       );
     }
     if (isAuthenticated && !isApproved) {
